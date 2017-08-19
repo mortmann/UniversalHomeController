@@ -1,0 +1,6 @@
+todo:
+
+-neue arduinos hinzufügmenü
+-positionen und etc der arduinos saven
+-optionen + save
+

@@ -1,0 +1,16 @@
+<house>
+   <floors class="com.sun.javafx.collections.ObservableListWrapper">
+      <floor>
+         <name>Test</name>
+         <arduinos>
+            <arduino>
+               <macAddress length="6">-86, -69, -52, -35, -18, -1</macAddress>
+               <name>test</name>
+               <x>296.0</x>
+               <y>162.0</y>
+               <isNew>true</isNew>
+            </arduino>
+         </arduinos>
+      </floor>
+   </floors>
+</house>

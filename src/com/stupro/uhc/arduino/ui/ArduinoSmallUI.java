@@ -29,7 +29,6 @@ public class ArduinoSmallUI extends StackPane {
 	protected ArduinoSmallUI reference;
 	protected boolean mouseOutside;
 	protected Label newLabel;
-	boolean isNew = true;
 	protected PopOver pop;
 	Arduino myArduino;
 
@@ -46,6 +45,7 @@ public class ArduinoSmallUI extends StackPane {
 		newLabel = new Label("NEW");
 		newLabel.setTextFill(Color.WHITE);
 		newLabel.setStyle("-fx-background-image: url('images/marker_background.png');");
+		newLabel.setVisible(myArduino.isNew());
 		t.minHeight(height);
 		t.minWidth(width);
 		setMinSize(width, height);
@@ -61,14 +61,15 @@ public class ArduinoSmallUI extends StackPane {
 		setOnMouseClicked(onDoubleClickEventHandler);
 		setOnMouseExited(onMouseExitEventHandler);
 		setOnMouseEntered(onMouseEnterEventHandler);
-
+		setTranslateX(arduino.getX());
+		setTranslateY(arduino.getY());
 	}
 
 	EventHandler<MouseEvent> onDoubleClickEventHandler = new EventHandler<MouseEvent>() {
 		@Override
 		public void handle(MouseEvent mouseEvent) {
 			if (mouseEvent.getButton().equals(MouseButton.PRIMARY)) {
-				if (isNew) {
+				if (myArduino.isNew()) {
 					newLabel.setVisible(false);
 				}
 				if (mouseEvent.getClickCount() == 2) {
@@ -83,7 +84,7 @@ public class ArduinoSmallUI extends StackPane {
 
 		@Override
 		public void handle(MouseEvent t) {
-			if (isNew) {
+			if (myArduino.isNew()) {
 				newLabel.setVisible(false);
 			}
 			reference.setTranslateZ(10);
@@ -96,8 +97,8 @@ public class ArduinoSmallUI extends StackPane {
 	EventHandler<MouseEvent> onMouseDraggedOverEventHandler = new EventHandler<MouseEvent>() {
 		@Override
 		public void handle(MouseEvent t) {
-			if (isNew) {
-				isNew = false;
+			if (myArduino.isNew()) {
+				myArduino.setNew(false);
 				// Util.changeParent(reference,
 				// GUI.Instance.GetHouseCenterPane());
 			}
@@ -113,12 +114,13 @@ public class ArduinoSmallUI extends StackPane {
 			}
 			reference.setTranslateX(point.getX() - width / 2);
 			reference.setTranslateY(point.getY() - height / 2);
+			myArduino.UpdatePosition(reference.getTranslateX(),reference.getTranslateY());
 		}
 	};
 	EventHandler<MouseEvent> onMouseExitEventHandler = new EventHandler<MouseEvent>() {
 		@Override
 		public void handle(MouseEvent t) {
-			if (isNew) {
+			if (myArduino.isNew()) {
 				return;
 			}
 			// mouseOutside = true;

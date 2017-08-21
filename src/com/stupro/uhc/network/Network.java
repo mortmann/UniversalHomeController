@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.URL;
 import java.net.UnknownHostException;
@@ -100,11 +101,22 @@ public class Network {
 					
 					
 					InetAddress IPAddress = receivePacket.getAddress();
-					//reject own broadcast
+					//reject own broadcast answer
 					if(IPAddress.equals(myAddress)){
 						continue;
 					}
-					
+					NetworkInterface ni = null;
+					byte[] mac = null;
+					try {
+						ni = NetworkInterface.getByInetAddress(IPAddress);
+						mac = ni.getHardwareAddress();
+					} catch (SocketException e) {
+						e.printStackTrace();
+					}
+				    if (ni == null || mac == null) //somehow it has no mac address
+				        return;
+
+				   
 					String data = new String(receivePacket.getData(), 0, receivePacket.getLength());
 //					System.out.println(IPAddress + " Data " + data + " ");
 					String[] splitData = data.split("_");
@@ -114,7 +126,7 @@ public class Network {
 						case 0: 
 							if(inetAdresses.contains(IPAddress) == false){
 								inetAdresses.add(IPAddress);
-								arduinos.put(IPAddress, new Arduino((long)Math.random(), "placeholder", IPAddress));
+								arduinos.put(IPAddress, new Arduino(mac, "placeholder", IPAddress));
 
 								ipToTimer.put(IPAddress, System.currentTimeMillis());
 								

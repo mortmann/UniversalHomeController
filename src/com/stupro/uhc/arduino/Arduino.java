@@ -3,6 +3,8 @@ package com.stupro.uhc.arduino;
 import java.net.InetAddress;
 import java.util.ArrayList;
 
+import org.simpleframework.xml.Element;
+
 import com.stupro.uhc.GUI;
 import com.stupro.uhc.arduino.children.Children;
 import com.stupro.uhc.network.Network;
@@ -15,20 +17,33 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 
 public class Arduino {
-
-	private long id;
+	@Element
+	private byte[] macAddress; // Maybe change to mac address
+	@Element
 	private String name;
+	@Element 
+	private double x = 0;
+	@Element 
+	private double y = 0;
+	@Element 
+	private boolean isNew = true;
+	
 	private boolean isActive = true; 
 	private ArrayList<Children> myChildren;
 	private InetAddress IPAddress;
 	private Button select;
-	public Arduino(long id, String name, InetAddress IPAddress) {
-		this.id = id;
+	
+	public Arduino(byte[] id, String name, InetAddress IPAddress) {
+		this.macAddress = id;
 		this.name = name;
 		myChildren = new ArrayList<>();
 		this.setIPAddress(IPAddress);
 	}
 	
+	//For loading
+	public Arduino(){
+		
+	}
 	public Pane GetSmallLayout(){
 		GridPane gridPane = new GridPane();
 		Button d = new Button("X");
@@ -43,7 +58,7 @@ public class Arduino {
 		gridPane.add(d, 0, 0);
 		gridPane.add(new Label("Arduino"), 0, 1);
 		gridPane.add(new Label(name), 1, 1);
-		gridPane.add(new Label("Type " + id), 0, 2);
+		gridPane.add(new Label("Type " + macAddress), 0, 2);
 		gridPane.add(new Label("LED "), 1, 2);
 		
 		select = new Button("Select");
@@ -98,7 +113,11 @@ public class Arduino {
 		myChildren.addAll(leds);
 		
 	}
-
+	public void UpdatePosition(double x, double y){
+		this.x = x;
+		this.y = y;
+	}
+	
 	public InetAddress getIPAddress() {
 		return IPAddress;
 	}
@@ -114,5 +133,37 @@ public class Arduino {
 	public void setName(String name) {
 		this.name = name;
 	}
+
+	@Override
+	public String toString() {
+		if(name==null || name.isEmpty())
+			return IPAddress.toString(); // change this to some kind of default name for its id
+		return name;
+	}
+
+	public double getX() {
+		return x;
+	}
+
+	public double getY() {
+		return y;
+	}
+
+	public boolean isNew() {
+		return isNew;
+	}
+
+	public void setNew(boolean isNew) {
+		this.isNew = isNew;
+	}
 	
+	public String MacAddress(){
+		StringBuilder sb = new StringBuilder(18);
+	    for (byte b : macAddress) {
+	        if (sb.length() > 0)
+	            sb.append(':');
+	        sb.append(String.format("%02x", b));
+	    }
+	    return sb.toString();
+	}
 }

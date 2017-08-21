@@ -8,12 +8,17 @@ import java.awt.SystemTray;
 import java.awt.Toolkit;
 import java.awt.TrayIcon;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.net.URL;
+
 import org.controlsfx.control.Notifications;
 import org.controlsfx.control.PopOver;
 import org.controlsfx.control.PopOver.ArrowLocation;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.Glyph;
+import org.simpleframework.xml.Serializer;
+import org.simpleframework.xml.convert.AnnotationStrategy;
+import org.simpleframework.xml.core.Persister;
 
 import com.stupro.uhc.arduino.Arduino;
 import com.stupro.uhc.arduino.ui.ArduinoBigUI;
@@ -22,14 +27,16 @@ import com.stupro.uhc.network.Network;
 import javafx.application.*;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
@@ -59,30 +66,47 @@ public class GUI {
 	private AudioClip notifySound;
 	private House myHouse;
 	private ArduinoBigUI arduinoBigUI;
-	Button b;
+	
+	
+	
+	private ToggleButton newDeviceButton;
+	private PopOver newDevicePopOver;
+	private ObservableList<Arduino> newArduinos;
+	
+	
 	public GUI() {
 	}
 	
 	public void start(Stage s) throws Exception {
 		Instance = this;
 		createTrayIcon(s);
-		
+		newArduinos = FXCollections.observableArrayList();
 		center = new StackPane();
 		center.setStyle("-fx-background-color:transparent;");
 		center.toBack();
 		this.mainWindow = s;
+		mainWindow.initStyle(StageStyle.UNDECORATED);
+		
 		mainStackPane = new StackPane();
 		myHouse = new House();
+		Serializer serializer = new Persister(new AnnotationStrategy());
+		try {
+			House os = serializer.read(House.class, new File("save.xml"));
+			myHouse = os;
+			myHouse.load();
+		} catch (Exception e) {
+			//if the file doesn´t exist or can´t be correctly read
+			//it´s gonna be catched here and thats fine
+		}	
+		
 		mainLayout= new BorderPane();
 		
 		network = new Network(this);
 
 		Platform.setImplicitExit(false);
-		
 		mainLayout.setCenter(center);
 		BorderPane.setAlignment(center, Pos.CENTER);
 		//TODO: add menu on the top
-		//TODO: add a what happend at the bottom?
 		mainStackPane.getChildren().add(mainLayout);
 		scene = new Scene(mainStackPane,1024,720);
 		mainWindow.setScene(scene);
@@ -94,39 +118,92 @@ public class GUI {
 		
 		changeToHouse();
 		SetupRight();
+		SetupTop();
 		
-		myHouse.AddAruinoToFloor(new Arduino(0, "test", null), 0);
+		
+		//SETUP
+		String macAddress = "AA:BB:CC:DD:EE:FF";
+		String[] macAddressParts = macAddress.split(":");
+
+		// convert hex string to byte values
+		byte[] macAddressBytes = new byte[6];
+		for(int i=0; i<6; i++){
+		    Integer hex = Integer.parseInt(macAddressParts[i], 16);
+		    macAddressBytes[i] = hex.byteValue();
+		}
+		myHouse.AddAruinoToFloor(new Arduino(macAddressBytes, "test", null), 0);
+		System.out.println(new Arduino(macAddressBytes, "test", null).MacAddress());
+
+		
 	}
 	
 	
-	private void SetupRight(){
+	private void SetupTop() {
 		HBox h = new HBox();
-		Glyph g = new FontAwesome().create(FontAwesome.Glyph.COG);
-		g.setFontSize(20);
-		b = new Button("Settings",g);
-		b.setOnAction(x->showOptions());
-		h.getChildren().add(b);
+		FontAwesome fontAwesome = new FontAwesome();
+		Glyph cg = fontAwesome.create(FontAwesome.Glyph.CLOSE);
+		Button close = new Button("",cg);
+		close.setOnAction(x-> {END();});
+		Glyph ming = fontAwesome.create(FontAwesome.Glyph.MINUS);
+		Button minimize = new Button("",ming);
+		minimize.setOnAction(x-> {mainWindow.setIconified(true);});
+		Glyph maxgup = fontAwesome.create(FontAwesome.Glyph.CARET_SQUARE_ALT_UP);
+		Glyph maxgdown = fontAwesome.create(FontAwesome.Glyph.CARET_SQUARE_ALT_DOWN);
+
+		Button maximize = new Button("",maxgup);
+		maximize.setOnAction(x-> {
+			mainWindow.setMaximized(!mainWindow.isMaximized());
+			maximize.setGraphic(mainWindow.isMaximized()? maxgdown : maxgup);
+		});
+
+		h.setAlignment(Pos.TOP_RIGHT);
+		h.setMinHeight(50);
+		h.setMaxHeight(50);
+		h.getChildren().addAll(minimize,maximize,close);
+		mainLayout.setTop(h);
+	}
+
+	private void SetupRight(){
+		VBox h = new VBox();
+		Glyph ng  = new FontAwesome().create(FontAwesome.Glyph.PLUS_CIRCLE);
+		ng.setFontSize(20);
+		newDeviceButton = new ToggleButton("New Device",ng);
+		newDeviceButton.setOnAction(x->showNewDevices());
+		
+		h.getChildren().addAll(new Options(),newDeviceButton);
 		mainLayout.setRight(h);
 	}
 	
-	
-	
-	
-	private void showOptions() {
-		PopOver pop = new PopOver();
-		pop.setOnCloseRequest(x->{SaveOptions();});
-		pop.setTitle("Options"); 
+	private void showNewDevices() {
+		if(newDevicePopOver!=null&&newDevicePopOver.isShowing()){
+			newDevicePopOver.hide();
+			return;
+		}
+		newDevicePopOver = new PopOver();
+		newDevicePopOver.setOnHiding(x->{ newDeviceButton.setSelected(false); });
+		newDevicePopOver.setTitle("New Devices"); 
 		
 		VBox vbox = new VBox();
 		vbox.setPadding(new Insets(5));
 		vbox.setSpacing(5);
-		vbox.getChildren().add(CreateHBox(new Label("BlaBla"),new ComboBox<String>()));
-		vbox.getChildren().add(CreateHBox(new Label("Minimize to tray"),new CheckBox(" s ")));
-		pop.setContentNode(vbox);
-		pop.setAnchorLocation(AnchorLocation.WINDOW_TOP_LEFT);
-		pop.setArrowLocation(ArrowLocation.TOP_CENTER);
-		pop.show(b);
+		
+		ComboBox<Arduino> arduinos = new ComboBox<Arduino>(newArduinos);
+		if(newArduinos.size()>0)
+			arduinos.getSelectionModel().select(0);
+		
+		vbox.getChildren().add(CreateHBox(new Label("Arduino"),arduinos));
+		ComboBox<Floor> floor = new ComboBox<Floor>(myHouse.getFloors());
+		floor.getSelectionModel().select(0);
+		vbox.getChildren().add(CreateHBox(new Label("Choose Floor:"),floor));
+		Button add = new Button("ADD");
+		add.setOnAction(x->{ myHouse.AddAruinoToFloor(arduinos.getSelectionModel().getSelectedItem(), floor.getSelectionModel().getSelectedItem()); });
+		vbox.getChildren().add(CreateHBox(new Label(" "),add));
+		newDevicePopOver.setContentNode(vbox);
+		newDevicePopOver.setAnchorLocation(AnchorLocation.WINDOW_TOP_LEFT);
+		newDevicePopOver.setArrowLocation(ArrowLocation.TOP_CENTER);
+		newDevicePopOver.show(newDeviceButton);
 	}
+
 
 	private HBox CreateHBox(Node n1, Node n2){
 		HBox hbox = new HBox();
@@ -135,14 +212,19 @@ public class GUI {
 		return hbox;
 	}
 	
-	private void SaveOptions() {
-		
-	}
+
 
 	public void addReturnText(String s){
 		returnText.setText(returnText.getText() + "\n" + s);
 	}
 	public void END(){
+		Serializer serializer = new Persister(new AnnotationStrategy());
+		try {
+			serializer.write(myHouse, new File("save.xml"));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
 		if(network!=null)
 			network.CloseAllThreads();
 		SystemTray.getSystemTray().remove(trayIcon);

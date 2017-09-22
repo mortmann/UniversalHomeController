@@ -1,6 +1,5 @@
-package com.stupro.uhc.arduino;
+package com.stupro.uhc.arduino.modifier;
 
-import com.stupro.uhc.arduino.modifier.Modifier;
 import com.stupro.uhc.network.Network;
 import com.stupro.uhc.util.NumberTextField;
 
@@ -32,6 +31,13 @@ public class Repeater extends Modifier {
 		numberText = new NumberTextField();
 		gridPane.add(numberText, 1, 2);
 		return null;
+	}
+
+	@Override
+	protected void HandleSpecificData(String[] data) {
+		for (String string : data) {
+			System.out.println(string);
+		}		
 	}
 	
 	

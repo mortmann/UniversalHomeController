@@ -2,103 +2,91 @@ package com.stupro.uhc.arduino;
 
 import java.net.InetAddress;
 import java.util.ArrayList;
+import org.simpleframework.xml.Element;
 
-import com.stupro.uhc.GUI;
-import com.stupro.uhc.arduino.children.Children;
-import com.stupro.uhc.network.Network;
+import com.stupro.uhc.arduino.children.Child;
+import com.stupro.uhc.arduino.children.LED;
 
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.value.ObservableValue;
 import javafx.geometry.Insets;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Pane;
-import javafx.scene.paint.Color;
 
 public class Arduino {
-
-	private long id;
+	@Element
+	private String macAddress; 
+	@Element
 	private String name;
+	@Element 
+	private double x = 0;
+	@Element 
+	private double y = 0;
+	@Element 
+	private boolean isNew = true;
+	@Element
 	private boolean isActive = true; 
-	private ArrayList<Children> myChildren;
+	
+	private boolean timedOut = false; 
+	private ObservableValue<Boolean> timeout;
+	private ObservableValue<Boolean> active;
+	private ArrayList<Child> myChildren;
 	private InetAddress IPAddress;
-	private Button select;
-	public Arduino(long id, String name, InetAddress IPAddress) {
-		this.id = id;
+	
+	public Arduino(String id, String name, InetAddress IPAddress) {
+		this.macAddress = id;
 		this.name = name;
+		active = new SimpleBooleanProperty(isActive).asObject();
+		timeout = new SimpleBooleanProperty(timedOut).asObject();
+
 		myChildren = new ArrayList<>();
 		this.setIPAddress(IPAddress);
 	}
 	
-	public Pane GetSmallLayout(){
-		GridPane gridPane = new GridPane();
-		Button d = new Button("X");
-		
-		// if it is active send 0 if not then 1
-		d.setOnAction(x->{ 
-			Network.Instance.SendPacketToThisArduino("2_"+ (isActive? 0 : 1),this);
-			System.out.println("2_"+ (isActive? 0 : 1));
-			this.isActive = !isActive;
-			select.setDisable(!isActive);
-		});
-		gridPane.add(d, 0, 0);
-		gridPane.add(new Label("Arduino"), 0, 1);
-		gridPane.add(new Label(name), 1, 1);
-		gridPane.add(new Label("Type " + id), 0, 2);
-		gridPane.add(new Label("LED "), 1, 2);
-		
-		select = new Button("Select");
-		select.setOnAction(x-> GUI.Instance.changeCenterToArduino(this));
-		
-		gridPane.add(select, 1, 3);
-		return gridPane;
+	//For loading
+	public Arduino(){
+		myChildren = new ArrayList<>();
 	}
-	public Pane GetBigLayout(){
+
+	public ScrollPane GetBigLayout(){
 		int perColumn = 2;
 		int maxLED = myChildren.size(); // list.size() or smth gives 1-10 not 0-9
-		System.out.println(maxLED);
+		ScrollPane scrollPane = new ScrollPane();
+		scrollPane.setStyle("-fx-background-color:transparent;");
 		GridPane ledGrid = new GridPane();
 		for (int i = 0; i < maxLED; i++) {
-			GridPane childPane = new GridPane();
-			GridPane outerPane = new GridPane();
-
-			Button b1 = new Button("Save Color");
-			Button b2 = new Button("Save Timer");
-			Button deactivate = new Button("X");
-			int num = i;
-			int numberBool = myChildren.get(num).isActive()? 0:1;
-			deactivate.setOnAction(x->{
-				Network.Instance.SendPacketToArduino("3_"+ num+";"+numberBool);
-				myChildren.get(num).setActive(!myChildren.get(num).isActive());
-				childPane.setDisable(myChildren.get(num).isActive());
-				deactivate.setDisable(false);
-			});
-			childPane.add(myChildren.get(i).GetPane(i), 1, 0);
-			
-			b1.setOnAction(x-> Network.Instance.SendColorLED(num,(Color)myChildren.get(num).GetValue(),this));
-			childPane.add(b1, 2, 0);
-			childPane.add(b2, 2, 1);
-			childPane.setPadding(new Insets(10, 10, 10, 10)); 
-
-			outerPane.add(deactivate, 0, 0);
-			outerPane.add(childPane, 1, 0);
-
-			ledGrid.add(outerPane, (i%perColumn),i/perColumn);
+//			Button b1 = new Button("Save Color");
+//			b1.setOnAction(x-> Network.Instance.SendColorLED(num,(Color)myChildren.get(num).GetValue(),this));
+			ledGrid.add(myChildren.get(i).GetPane(i), (i%perColumn),i/perColumn);
 		}
 		ledGrid.setPadding(new Insets(10, 10, 10, 10)); 
-		return ledGrid;
+		
+		scrollPane.setContent(ledGrid);
+		return scrollPane;
 	}
-	public void HandleInfo(String[] info){
+	public void HandleInfo(String info){
+//		these are the cilds differentiated (most of the time it will have only 1)
+//		v										v
+//		<;;; (ID[;;][;;][;;]) ([;]) ([][]) <NEXT
+		setTimedOut(false);
+		String[] childs = info.split("<");
 		if(myChildren.size()>0){
 			return;
 		}
-		ArrayList<LED> leds = new ArrayList<LED>();
-		for(int i=0;i<=info.length-4;i+=4){
-			leds.add(new LED(Integer.parseInt(info[i+1]), Integer.parseInt(info[i+2]), Integer.parseInt(info[i+3])));
+		ArrayList<Child> leds = new ArrayList<Child>();
+		for(int i=1;i<childs.length;i++){
+			Child c = new LED(); // TODO: Make this semi automatic or full
+			c.HandleInfo(childs[i]);
+			leds.add(c); 
 		}
 		myChildren.addAll(leds);
 		
 	}
-
+	public void UpdatePosition(double x, double y){
+		this.x = x;
+		this.y = y;
+	}
+	
 	public InetAddress getIPAddress() {
 		return IPAddress;
 	}
@@ -114,5 +102,55 @@ public class Arduino {
 	public void setName(String name) {
 		this.name = name;
 	}
+
+	@Override
+	public String toString() {
+		if(name==null || name.isEmpty())
+			return IPAddress.toString(); // change this to some kind of default name for its id
+		return name;
+	}
+
+	public double getX() {
+		return x;
+	}
+
+	public double getY() {
+		return y;
+	}
+
+	public boolean isNew() {
+		return isNew;
+	}
+
+	public void setNew(boolean isNew) {
+		this.isNew = isNew;
+	}
 	
+	public String getMacAddress(){
+	    return macAddress;
+	}
+
+	public boolean isActive() {
+		return isActive;
+	}
+
+	public void setActive(boolean isActive) {
+		this.isActive = isActive;
+	}
+
+	public ObservableValue<Boolean> getActive() {
+		return active;
+	}
+
+	public void setTimedOut(boolean b) {
+		timedOut = b;
+	}
+
+	public ObservableValue<Boolean> getTimedOutProperty() {
+		return timeout;
+	}
+
+	public boolean isTimedOut() {
+		return timedOut;
+	}
 }

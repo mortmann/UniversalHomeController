@@ -5,11 +5,11 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
-import java.net.URL;
 import java.net.UnknownHostException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -19,11 +19,12 @@ import java.util.concurrent.TimeUnit;
 
 import com.stupro.uhc.GUI;
 import com.stupro.uhc.arduino.Arduino;
+import com.stupro.uhc.misc.Sound;
+import com.stupro.uhc.misc.Sound.Clip;
 
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
-import javafx.scene.media.AudioClip;
 import javafx.scene.paint.Color;
 
 // 0 = broadcast
@@ -35,7 +36,7 @@ import javafx.scene.paint.Color;
 public class Network {
 	public static Network Instance;
 	
-	private static int timeoutTime = 5000;
+	private static int timeoutTime = 10000;
 	
 	private DatagramSocket clientSocket;
 	private TimerTask heartbeat;
@@ -43,32 +44,31 @@ public class Network {
 	private Timer timer = new Timer();
 	private HashMap<InetAddress,Long> ipToTimer;
 	private ArrayList<InetAddress> inetAdresses;
-	
+	private HashMap<String,Arduino> macToArduinos;
 	private HashMap<InetAddress,Arduino> arduinos;
-
 	
 	private GUI gui;
 
 	private InetAddress myAddress;
 	
-	public Network(GUI gui) {
+	public Network(GUI gui, Collection<Arduino> collection) {
 		Instance = this;
+		macToArduinos = new HashMap<>();
+		addAllExisitingArduinos(collection);
 		try {
 			clientSocket = new DatagramSocket(8888);
 			clientSocket.setReuseAddress(true);
 		} catch (SocketException e) {
-			e.printStackTrace();
+//			e.printStackTrace();
 			Alert alert = new Alert(AlertType.ERROR);
 			alert.setTitle("Warning!");
-			alert.setContentText("Required Port is already in use! Please freeup that Port!");
-		    URL resource = getClass().getResource("/Sounds/error.wav");
-			new AudioClip(resource.toString()).play();
+			alert.setContentText("Required Port is already in use! Please free up that Port!");
+			Sound.playSound(Clip.error);
 			alert.showAndWait();
 
 			System.exit(0);
 		}
 		arduinos = new HashMap<>();
-
 		this.gui = gui;
 		ipToTimer = new HashMap<>();
 		inetAdresses = new ArrayList<InetAddress>();
@@ -100,7 +100,7 @@ public class Network {
 					
 					
 					InetAddress IPAddress = receivePacket.getAddress();
-					//reject own broadcast
+					//reject own broadcast answer
 					if(IPAddress.equals(myAddress)){
 						continue;
 					}
@@ -109,15 +109,25 @@ public class Network {
 //					System.out.println(IPAddress + " Data " + data + " ");
 					String[] splitData = data.split("_");
 					int type = Integer.parseInt(splitData[0]);
-					
+
 					switch(type){
 						case 0: 
 							if(inetAdresses.contains(IPAddress) == false){
 								inetAdresses.add(IPAddress);
-								arduinos.put(IPAddress, new Arduino((long)Math.random(), "placeholder", IPAddress));
-
 								ipToTimer.put(IPAddress, System.currentTimeMillis());
+								String mac = splitData[2];
+								//we already have this arduino but not this new ip
+								//or we are loading and finding the ip´s 
+								if(macToArduinos.containsKey(mac)){
+									arduinos.put(IPAddress, macToArduinos.get(mac));
+									break;
+								}
+								//we do not know this one so add a new Arduino
+								Arduino ar = new Arduino(mac, "placeholder", IPAddress);
+								arduinos.put(IPAddress, ar);
+								macToArduinos.put(mac,ar);
 								
+								//Add it to the UI
 								//this is because fx can only change ui in fx-thread so it runs it later in it
 								Platform.runLater(new Runnable(){
 									@Override
@@ -130,9 +140,9 @@ public class Network {
 						case 1:
 							break;
 						case 2: 
+							//Heartbeat update timeouttimer
 							ipToTimer.replace(IPAddress, System.currentTimeMillis());
 							HandleInfo(splitData[1],IPAddress);
-							
 							break;
 						case 3: //received command -> update?
 							System.out.println(splitData[1]);
@@ -148,13 +158,12 @@ public class Network {
 			public void run() {
 				for (int i = inetAdresses.size()-1; i >= 0; i--) {
 					if(ipToTimer.containsKey(inetAdresses.get(i)) && System.currentTimeMillis()-ipToTimer.get(inetAdresses.get(i)) > timeoutTime){
-						System.out.println("Remove ARDUINO");
 						int num = i;
 						InetAddress inet = inetAdresses.get(num);
 						Platform.runLater(new Runnable(){
 							@Override
 							public void run() {
-								gui.RemoveArduino(arduinos.get(inet));
+								gui.ArduinoTimedOut(arduinos.get(inet)); 
 							}
 						});
 						ipToTimer.remove(inetAdresses.get(i));
@@ -188,7 +197,11 @@ public class Network {
 					sendData = "1_heartbeatyo".getBytes();
 					try {
 						sendPacket = new DatagramPacket(sendData, sendData.length,inetAddress, 8888);
-						clientSocket.send(sendPacket);
+						if(clientSocket.isClosed()){
+							Thread.currentThread().interrupt();
+						} else {
+							clientSocket.send(sendPacket);
+						}
 					} catch (Exception e1) {
 						e1.printStackTrace();
 					}
@@ -198,13 +211,13 @@ public class Network {
 		timer.scheduleAtFixedRate(heartbeat, 0, 500);
 		receive.start();
 		
+		TestAddArduino();
 	}
 	public void HandleInfo(String data, InetAddress iPAddress) {
-		String[] info = data.split(";");
 		Platform.runLater(new Runnable(){
 			@Override
 			public void run() {
-				arduinos.get(iPAddress).HandleInfo(info);
+				arduinos.get(iPAddress).HandleInfo(data);
 			}
 		});
 	}
@@ -214,7 +227,6 @@ public class Network {
 		if(ar.getIPAddress() == null){
 			return;
 		}
-//		InetAddress IPAddress = receivePacket.getAddress();//InetAddress.getByName("255.255.255.255");// 192.168.0.32
 		byte[] sendData = new byte[1024];
 		String s ="4_"+ led+","+(int)(c.getRed()*255)+","+(int)(c.getGreen()*255)+","+(int)(c.getBlue()*255);
 		System.out.println(s);
@@ -271,5 +283,31 @@ public class Network {
 
 		
 	}
+	public void addAllExisitingArduinos(Collection<Arduino> allArduinos) {
+		if(allArduinos==null){
+			return;
+		}
+		for (Arduino arduino : allArduinos) {
+			macToArduinos.put(arduino.getMacAddress(), arduino);
+		}
+	}
 	
+	
+	private void TestAddArduino(){
+		try {
+			InetAddress ip = InetAddress.getByName("111.111.111.111");
+			Arduino ar = new Arduino("AA:AA:AA:AA:AA", "TEST", null);
+			ar.HandleInfo("<10;0;0;255(5[])<0;0;128;0(5[1;2])<0;0;0;255(5[])< 0;0;128;0(5[]) < 0;0;0;255(5[]) < 0;0;128;0(5[]) < 0;0;0;255(5[]) < 0;0;128;0(5[]) < 0;0;0;255(5[]) < 0;0;128;0(5[])");
+			arduinos.put(ip, ar);
+			Platform.runLater(new Runnable(){
+				@Override
+				public void run() {
+					gui.AddArduino(arduinos.get(ip));
+				}
+			});
+			
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		}
+	}
 }

@@ -1,6 +1,11 @@
 package com.stupro.uhc;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+
+import org.simpleframework.xml.Element;
+import org.simpleframework.xml.ElementList;
 
 import com.stupro.uhc.arduino.Arduino;
 import com.stupro.uhc.arduino.ui.ArduinoSmallUI;
@@ -17,10 +22,16 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 
 public class Floor {
-
+	
+	@Element(required=false)
 	private String name = "Test";
+	@ElementList
+	private ArrayList<Arduino> arduinos;
+	
+	HashMap<Arduino,Pane> arduinoToPane;
 	
 	private StackPane center;
+	
 	protected double orgSceneX;
 	protected double orgSceneY;
 	protected double orgTranslateX;
@@ -33,11 +44,12 @@ public class Floor {
 	protected double orgScreenY;
 	protected boolean dragging;
 
-	HashMap<Arduino,Pane> arduinoToPane;
+	
 	
 	public Floor(){
 		center = new StackPane();
 		arduinoToPane = new HashMap<>();
+		arduinos = new ArrayList<>();
 		Image image = new Image("/images/testapartment.png");
 		background = new ImageView(image);
 		maxX = image.getWidth();
@@ -60,13 +72,17 @@ public class Floor {
 		center.setOnMouseDragged(onMouseDraggedEventHandler);
 		center.setOnMouseReleased(onMouseDraggedEndEventHandler);
 	}
+	
 	public void AddArduino(Arduino ar){
 		Pane p = new ArduinoSmallUI(ar);
 		arduinoToPane.put(ar, p);
+		if(arduinos.contains(ar)==false) // this is for loading
+			arduinos.add(ar);
 		arduinoRoot.getChildren().add(p);
 	}
 	
 	public void RemoveArduino(Arduino adr) {
+		arduinos.remove(adr);
 		arduinoRoot.getChildren().remove(arduinoToPane.get(adr));
 		arduinoToPane.remove(adr);
 	}
@@ -161,9 +177,7 @@ public class Floor {
 			
 			double width = bounds.getWidth();
 			double height = bounds.getHeight();
-			System.out.println(width + "  "+ height);
 			if(bounds.getMinX()>width/2){
-				System.out.println("stop x<");
 				center.setTranslateX(width/2);
 			}
 			if(bounds.getMaxX()<width/2){
@@ -180,5 +194,15 @@ public class Floor {
 	@Override
 	public String toString(){
 		return name;
+	}
+
+	public void load() {
+		for (Arduino arduino : arduinos) {
+			AddArduino(arduino);
+		}
+	}
+
+	public Collection<? extends Arduino> getArduinos() {
+		return arduinos;
 	}
 }

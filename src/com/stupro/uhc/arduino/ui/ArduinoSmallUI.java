@@ -29,7 +29,9 @@ public class ArduinoSmallUI extends StackPane {
 	protected ArduinoSmallUI reference;
 	protected boolean mouseOutside;
 	protected Label newLabel;
-	boolean isNew = true;
+	protected ImageView disabeldImage;
+	protected ImageView timedOutImage;
+
 	protected PopOver pop;
 	Arduino myArduino;
 
@@ -46,14 +48,30 @@ public class ArduinoSmallUI extends StackPane {
 		newLabel = new Label("NEW");
 		newLabel.setTextFill(Color.WHITE);
 		newLabel.setStyle("-fx-background-image: url('images/marker_background.png');");
+		newLabel.setVisible(myArduino.isNew());
+		disabeldImage = new ImageView(new Image("images/disabled.png"));
+//		disabeldImage.setStyle("-fx-background-image: url('images/disabled.png');");
+		disabeldImage.setVisible(myArduino.isActive()==false);
+		timedOutImage = new ImageView(new Image("images/timedout.png"));
+//		timedOutLabel.setStyle("-fx-background-image: url('images/timedout.png');");
+		timedOutImage.setVisible(false);
+		myArduino.getActive().addListener(x->{
+			disabeldImage.setVisible(myArduino.isActive());
+		});
+		myArduino.getTimedOutProperty().addListener(x->{
+			timedOutImage.setVisible(myArduino.isTimedOut());  
+		});
 		t.minHeight(height);
 		t.minWidth(width);
 		setMinSize(width, height);
 		setMaxSize(width, height);
 		background.fitWidthProperty().bind(this.widthProperty());
 		background.fitHeightProperty().bind(this.heightProperty());
-		getChildren().addAll(background, t, newLabel);
+		getChildren().addAll(background, t, newLabel,disabeldImage,timedOutImage);
 		StackPane.setAlignment(newLabel, Pos.TOP_RIGHT);
+		StackPane.setAlignment(disabeldImage, Pos.TOP_LEFT);
+		StackPane.setAlignment(timedOutImage, Pos.TOP_CENTER);
+
 		setOnMousePressed(onMousePressedEventHandler);
 		setOnMouseDragged(onMouseDraggedEventHandler);
 		setOnMouseDragOver(onMouseDraggedOverEventHandler);
@@ -61,14 +79,15 @@ public class ArduinoSmallUI extends StackPane {
 		setOnMouseClicked(onDoubleClickEventHandler);
 		setOnMouseExited(onMouseExitEventHandler);
 		setOnMouseEntered(onMouseEnterEventHandler);
-
+		setTranslateX(arduino.getX());
+		setTranslateY(arduino.getY());
 	}
 
 	EventHandler<MouseEvent> onDoubleClickEventHandler = new EventHandler<MouseEvent>() {
 		@Override
 		public void handle(MouseEvent mouseEvent) {
 			if (mouseEvent.getButton().equals(MouseButton.PRIMARY)) {
-				if (isNew) {
+				if (myArduino.isNew()) {
 					newLabel.setVisible(false);
 				}
 				if (mouseEvent.getClickCount() == 2) {
@@ -83,7 +102,7 @@ public class ArduinoSmallUI extends StackPane {
 
 		@Override
 		public void handle(MouseEvent t) {
-			if (isNew) {
+			if (myArduino.isNew()) {
 				newLabel.setVisible(false);
 			}
 			reference.setTranslateZ(10);
@@ -96,8 +115,8 @@ public class ArduinoSmallUI extends StackPane {
 	EventHandler<MouseEvent> onMouseDraggedOverEventHandler = new EventHandler<MouseEvent>() {
 		@Override
 		public void handle(MouseEvent t) {
-			if (isNew) {
-				isNew = false;
+			if (myArduino.isNew()) {
+				myArduino.setNew(false);
 				// Util.changeParent(reference,
 				// GUI.Instance.GetHouseCenterPane());
 			}
@@ -113,12 +132,13 @@ public class ArduinoSmallUI extends StackPane {
 			}
 			reference.setTranslateX(point.getX() - width / 2);
 			reference.setTranslateY(point.getY() - height / 2);
+			myArduino.UpdatePosition(reference.getTranslateX(),reference.getTranslateY());
 		}
 	};
 	EventHandler<MouseEvent> onMouseExitEventHandler = new EventHandler<MouseEvent>() {
 		@Override
 		public void handle(MouseEvent t) {
-			if (isNew) {
+			if (myArduino.isNew()) {
 				return;
 			}
 			// mouseOutside = true;

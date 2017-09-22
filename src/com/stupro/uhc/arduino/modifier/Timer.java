@@ -1,6 +1,5 @@
-package com.stupro.uhc.arduino;
+package com.stupro.uhc.arduino.modifier;
 
-import com.stupro.uhc.arduino.modifier.Modifier;
 import com.stupro.uhc.network.Network;
 import com.stupro.uhc.util.NumberTextField;
 
@@ -44,6 +43,13 @@ public class Timer extends Modifier {
 		b2.setOnAction(x-> SendPerNetwork());
 		gridPane.add(b2, 1, 3);
 		return gridPane;
+	}
+
+	@Override
+	protected void HandleSpecificData(String[] data) {
+		for (String string : data) {
+			System.out.println(string);
+		}
 	}
 
 }

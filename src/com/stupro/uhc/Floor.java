@@ -1,6 +1,7 @@
 package com.stupro.uhc;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 
 import org.simpleframework.xml.Element;
@@ -77,7 +78,6 @@ public class Floor {
 		arduinoToPane.put(ar, p);
 		if(arduinos.contains(ar)==false) // this is for loading
 			arduinos.add(ar);
-		System.out.println("p" + p.getTranslateX());
 		arduinoRoot.getChildren().add(p);
 	}
 	
@@ -177,7 +177,6 @@ public class Floor {
 			
 			double width = bounds.getWidth();
 			double height = bounds.getHeight();
-			System.out.println(width + "  "+ height);
 			if(bounds.getMinX()>width/2){
 				center.setTranslateX(width/2);
 			}
@@ -201,5 +200,9 @@ public class Floor {
 		for (Arduino arduino : arduinos) {
 			AddArduino(arduino);
 		}
+	}
+
+	public Collection<? extends Arduino> getArduinos() {
+		return arduinos;
 	}
 }

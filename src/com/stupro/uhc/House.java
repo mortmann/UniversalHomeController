@@ -1,6 +1,7 @@
 package com.stupro.uhc;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 
 import org.simpleframework.xml.ElementList;
@@ -29,7 +30,7 @@ public class House {
 	
 	public Node getCenter() {
 		if(floors.size()==0){
-			createNewFloor();
+			createNewFloor("","test");
 		}
 		return floors.get(currSelectedFloor).getCenter();
 	}
@@ -42,7 +43,7 @@ public class House {
 		floors.get(number).AddArduino(ard);
 	}
 	
-	public void createNewFloor(){
+	public void createNewFloor(String fileLocation, String name){
 		
 		Floor f = new Floor();
 		floorToArduinos.put(f, new ArrayList<Arduino>());
@@ -69,6 +70,10 @@ public class House {
 		return floors;
 	}
 
+	public void ChangeCurrFloor(Floor f){
+		currSelectedFloor = floors.indexOf(f);
+	}
+	
 	public void AddAruinoToFloor(Arduino ard, Floor floor) {
 		AddAruinoToFloor(ard, floors.indexOf(floor));
 	}
@@ -76,6 +81,15 @@ public class House {
 	public void load() {
 		for (Floor floor : floors) {
 			floor.load(); 
+			floorToArduinos.put(floor,new ArrayList<>(floor.getArduinos()));
 		}
+	}
+
+	public Collection<Arduino> getAllArduinos() {
+		ArrayList<Arduino> ards = new ArrayList<>();
+		for (Floor floor : floors) {
+			ards.addAll(floor.getArduinos());
+		}
+		return ards;
 	}
 }

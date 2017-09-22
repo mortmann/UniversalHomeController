@@ -29,6 +29,9 @@ public class ArduinoSmallUI extends StackPane {
 	protected ArduinoSmallUI reference;
 	protected boolean mouseOutside;
 	protected Label newLabel;
+	protected ImageView disabeldImage;
+	protected ImageView timedOutImage;
+
 	protected PopOver pop;
 	Arduino myArduino;
 
@@ -46,14 +49,29 @@ public class ArduinoSmallUI extends StackPane {
 		newLabel.setTextFill(Color.WHITE);
 		newLabel.setStyle("-fx-background-image: url('images/marker_background.png');");
 		newLabel.setVisible(myArduino.isNew());
+		disabeldImage = new ImageView(new Image("images/disabled.png"));
+//		disabeldImage.setStyle("-fx-background-image: url('images/disabled.png');");
+		disabeldImage.setVisible(myArduino.isActive()==false);
+		timedOutImage = new ImageView(new Image("images/timedout.png"));
+//		timedOutLabel.setStyle("-fx-background-image: url('images/timedout.png');");
+		timedOutImage.setVisible(false);
+		myArduino.getActive().addListener(x->{
+			disabeldImage.setVisible(myArduino.isActive());
+		});
+		myArduino.getTimedOutProperty().addListener(x->{
+			timedOutImage.setVisible(myArduino.isTimedOut());  
+		});
 		t.minHeight(height);
 		t.minWidth(width);
 		setMinSize(width, height);
 		setMaxSize(width, height);
 		background.fitWidthProperty().bind(this.widthProperty());
 		background.fitHeightProperty().bind(this.heightProperty());
-		getChildren().addAll(background, t, newLabel);
+		getChildren().addAll(background, t, newLabel,disabeldImage,timedOutImage);
 		StackPane.setAlignment(newLabel, Pos.TOP_RIGHT);
+		StackPane.setAlignment(disabeldImage, Pos.TOP_LEFT);
+		StackPane.setAlignment(timedOutImage, Pos.TOP_CENTER);
+
 		setOnMousePressed(onMousePressedEventHandler);
 		setOnMouseDragged(onMouseDraggedEventHandler);
 		setOnMouseDragOver(onMouseDraggedOverEventHandler);

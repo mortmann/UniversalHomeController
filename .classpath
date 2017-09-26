@@ -7,5 +7,6 @@
 	<classpathentry kind="lib" path="JFXtras/jfxtras-all-8.0-r6-20170815.080158-440.jar"/>
 	<classpathentry kind="lib" path="JFXtras/jfxtras-labs-8.0-r6-20170815.080140-428.jar"/>
 	<classpathentry kind="lib" path="simplexml/simple-xml-2.7.1.jar"/>
+	<classpathentry kind="lib" path="I:/Downloads/sqlite-jdbc-3.20.0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

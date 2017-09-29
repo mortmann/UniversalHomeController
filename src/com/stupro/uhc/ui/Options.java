@@ -25,7 +25,6 @@ public class Options extends ButtonOver {
 	}
 	protected void createPopOverContent(){
 		popOver.setTitle("Options"); 
-		vbox.getChildren().add(CreateHBox(new Label("BlaBla"),new ComboBox<String>()));
 		iconifiedToTrayCheckBox = new CheckBox();
 		iconifiedToTrayCheckBox.setSelected(true);
 		vbox.getChildren().add(CreateHBox(new Label("Minimize to tray"),iconifiedToTrayCheckBox));
@@ -84,6 +83,11 @@ public class Options extends ButtonOver {
 	@Override
 	protected void onClose() {
 		SaveOptions();
+	}
+	@Override
+	protected void onShowing() {
+		// TODO Auto-generated method stub
+		
 	}
 	
 }

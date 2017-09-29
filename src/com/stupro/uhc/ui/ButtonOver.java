@@ -5,10 +5,12 @@ import org.controlsfx.control.PopOver.ArrowLocation;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.Glyph;
 
+import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.ToggleButton;
-import javafx.scene.layout.HBox;
+import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.PopupWindow.AnchorLocation;
@@ -25,6 +27,7 @@ public abstract class ButtonOver extends StackPane {
 		toggle = new ToggleButton(buttonText,fontG);
 		getChildren().addAll(toggle);
 		toggle.setOnAction(x->show());
+		toggle.setPrefWidth(150);
 		createPopOver();
 	}
 	protected ButtonOver(){}
@@ -41,6 +44,7 @@ public abstract class ButtonOver extends StackPane {
 			popOver.hide();
 			return;
 		}
+		onShowing();
 		popOver.show(toggle);
 	}
 	
@@ -56,19 +60,35 @@ public abstract class ButtonOver extends StackPane {
 			toggle.setSelected(false);
 			onClose();
 		});
+		
+		
 		popOver.setAutoHide(false);
 		
 		vbox = new VBox();
 		vbox.setPadding(new Insets(5));
 		vbox.setSpacing(5);
-
+		
 		createPopOverContent();
 	}
-	protected HBox CreateHBox(Node n1, Node n2){
-		HBox hbox = new HBox();
-		hbox.getChildren().addAll(n1,n2);
-		hbox.setSpacing(10);
-		return hbox;
+	protected abstract void onShowing();
+	
+	protected Node CreateHBox(Node n1, Node n2){
+//		HBox hbox = new HBox();
+//		hbox.getChildren().addAll(n1,n2);
+//		hbox.setSpacing(10);
+//		hbox.
+		GridPane g = new GridPane();
+		g.add(n1, 0, 0);
+		g.add(n2, 1, 0);
+		GridPane.setHalignment(n2, HPos.CENTER);
+		ColumnConstraints column1 = new ColumnConstraints();
+		column1.setPercentWidth(40);
+		g.getColumnConstraints().add(column1); 
+
+		ColumnConstraints column2 = new ColumnConstraints();
+		column2.setPercentWidth(60);
+		g.getColumnConstraints().add(column2); 
+		return g;
 	}
 
 	

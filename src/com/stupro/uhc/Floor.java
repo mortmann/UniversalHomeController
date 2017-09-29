@@ -26,7 +26,10 @@ public class Floor {
 	@Element(required=false)
 	private String name = "Test";
 	@ElementList
-	private ArrayList<Arduino> arduinos;
+	protected ArrayList<Arduino> arduinos;
+	@Element
+	protected String pictureLocation = "/images/testapartment.png";
+	
 	
 	HashMap<Arduino,Pane> arduinoToPane;
 	
@@ -46,17 +49,17 @@ public class Floor {
 
 	
 	
-	public Floor(){
+	public Floor(String pictureLocation){
 		center = new StackPane();
 		arduinoToPane = new HashMap<>();
 		arduinos = new ArrayList<>();
-		Image image = new Image("/images/testapartment.png");
+		Image image = new Image(pictureLocation);
 		background = new ImageView(image);
 		maxX = image.getWidth();
 		maxY = image.getHeight();
 		background.setStyle("-fx-background-color: linear-gradient(to bottom, rgb(20,20,20), rgb(30,60,80));");
 		arduinoRoot = new Pane();
-
+		this.pictureLocation = pictureLocation;
 		arduinoRoot.setMaxHeight(maxY);
 		arduinoRoot.setMaxWidth(maxX);
 
@@ -79,6 +82,7 @@ public class Floor {
 		if(arduinos.contains(ar)==false) // this is for loading
 			arduinos.add(ar);
 		arduinoRoot.getChildren().add(p);
+		
 	}
 	
 	public void RemoveArduino(Arduino adr) {
@@ -205,4 +209,22 @@ public class Floor {
 	public Collection<? extends Arduino> getArduinos() {
 		return arduinos;
 	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if(obj instanceof Floor == false){
+			return false;
+		}
+		Floor f = (Floor) obj;
+		return name.equals(f.name);
+	}
+
+	public void setPictureLocation(String fileLocation) {
+		this.pictureLocation = fileLocation;
+	}
+
+	public String getPictureLocation() {
+		return pictureLocation;
+	}
+	
 }

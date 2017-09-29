@@ -30,7 +30,7 @@ public class House {
 	
 	public Node getCenter() {
 		if(floors.size()==0){
-			createNewFloor("","test");
+			createNewFloor("/images/testapartment.png","test");
 		}
 		return floors.get(currSelectedFloor).getCenter();
 	}
@@ -44,8 +44,7 @@ public class House {
 	}
 	
 	public void createNewFloor(String fileLocation, String name){
-		
-		Floor f = new Floor();
+		Floor f = new Floor(fileLocation);
 		floorToArduinos.put(f, new ArrayList<Arduino>());
 		floors.add(f);
 	}
@@ -91,5 +90,30 @@ public class House {
 			ards.addAll(floor.getArduinos());
 		}
 		return ards;
+	}
+
+	public void ChangeArduinoFloor(Floor floor, Arduino arduino) {
+		for(Floor f : floors){
+			if(floorToArduinos.get(f).contains(arduino)){
+				floorToArduinos.get(f).remove(arduino);
+			}
+		}
+		AddAruinoToFloor(arduino,floor);
+	}
+
+	public Floor getCurrSelectedFloor() {
+		return floors.get(currSelectedFloor);
+	}
+
+	public void setCurrSelectedFloor(int currSelectedFloor) {
+		this.currSelectedFloor = currSelectedFloor;
+	}
+	public void deleteFloor(Floor f){
+		if(floors.size()<=1){
+			return;
+		}
+		floors.remove(f);
+		GUI.Instance.addAllArduino(floorToArduinos.get(f));
+		floorToArduinos.remove(f);
 	}
 }

@@ -3,11 +3,22 @@ package com.stupro.uhc.util;
 import javafx.scene.control.TextField;
 
 public class NumberTextField extends TextField {
-	int maxLength = -1;
-	int maxNumber = 24;
+	int maxLength = 10;
+	int maxNumber = -1;
+	boolean isFloat = false;
+	
 	public NumberTextField(int maxLength) {
 		super();
 		this.maxLength = maxLength; 
+	}
+	public NumberTextField(int maxLength,boolean isFloat) {
+		super();
+		this.maxLength = maxLength; 
+		this.isFloat = isFloat;
+	}
+	public NumberTextField(boolean isFloat) {
+		super();
+		this.isFloat = isFloat;
 	}
 	public NumberTextField(int maxLength, int maxNumber) {
 		super();
@@ -32,7 +43,7 @@ public class NumberTextField extends TextField {
 	@Override
 	public void replaceText(int start, int end, String text) {
 		if (validate(text)) {
-		 if (this.getMaxLength() <= 0) {
+		 if (this.getMaxLength() <= 0 || getMaxLength() ==-1) {
 	            // Default behavior, in case of no max length
 
 	            super.replaceText(start, end, text);
@@ -60,7 +71,7 @@ public class NumberTextField extends TextField {
 	                super.replaceText(start, end, cutInsertedText);
 	            }
 	            // Limit the Textfield Number-Value when maximum is given
-	            if(maxNumber!=-1 && Integer.parseInt(this.getText())>maxNumber){
+	            if(maxNumber!=-1 && GetFloatValue()>maxNumber){
 	            	setText(maxNumber+"");
 	            }
 	        }
@@ -78,10 +89,31 @@ public class NumberTextField extends TextField {
 		
 	}
 	
+	public int GetIntValue(){
+		if(this.getText()==null||this.getText()==""||this.getText().isEmpty()){
+			return 0;
+		}
+		return Integer.parseInt(this.getText());
+	}
+	
+	public float GetFloatValue(){
+		if(this.getText()==null||this.getText()==""||this.getText().isEmpty()){
+			return 0;
+		}
+		return Float.parseFloat(this.getText());
+	}
 	private int getMaxLength() {
 		return maxLength;
 	}
 	private boolean validate(String text) {
+		if(isFloat){
+			if(text.matches("[.]")){
+				if(this.getText().contains(".")){
+					return false;
+				}
+			}
+			return text.matches("[0-9]*[.]?[0-9]*");
+		}
 		return text.matches("[0-9]*");
 	}
 }

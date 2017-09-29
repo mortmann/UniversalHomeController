@@ -5,13 +5,18 @@ import com.stupro.uhc.GUI;
 import com.stupro.uhc.arduino.Arduino;
 import com.stupro.uhc.network.Network;
 
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 
@@ -23,13 +28,33 @@ public class ArduinoBigUI {
 	public ArduinoBigUI(Arduino arduino){
 		myArduino = arduino;
 		mainLayout = new BorderPane();
-		mainLayout.setCenter(myArduino.GetBigLayout());
+		mainLayout.setCenter(GetCenterLayout());
 		
 		HBox top = new HBox();
 		Button back = new Button();
 		back.setText("<-");
 		Label label = new Label("Floor:");
 		ComboBox<Floor> floor = new ComboBox<>(GUI.Instance.getMyHouse().getFloors());
+		floor.getSelectionModel().select(GUI.Instance.getCurrFloor());
+		Button floorButton = new Button();
+		floorButton.setDisable(true);
+		floor.valueProperty().addListener(new ChangeListener<Floor>() {
+			@Override
+			public void changed(ObservableValue<? extends Floor> observable, Floor oldF, Floor newF) {
+				if(newF!=GUI.Instance.getCurrFloor()){
+					floorButton.setDisable(false);
+				} else {
+					floorButton.setDisable(true);
+				}
+			}    
+	      });
+		floorButton.setText("Change");
+		floorButton.setOnAction(x->{
+			GUI.Instance.getMyHouse().ChangeArduinoFloor(floor.getSelectionModel().getSelectedItem(),myArduino);
+			GUI.Instance.changeFloor(floor.getSelectionModel().getSelectedItem());
+			myArduino.ResetPosition();
+		});
+
 		back.setOnAction(x->{GUI.Instance.changeToHouse();});
 		Button disable = new Button();
 		disable.setText("Disable Device!");
@@ -55,11 +80,29 @@ public class ArduinoBigUI {
 			disable.setVisible(true);
 			activate.setVisible(false);
 		});
-		top.getChildren().addAll(back,label,floor,disable);
+		top.getChildren().addAll(back,label,floor,floorButton,disable);
 		mainLayout.setTop(top);
 	}
 	
 
+	public ScrollPane GetCenterLayout(){
+		int maxLED = myArduino.getChildren().size(); // list.size() or smth gives 1-10 not 0-9
+		ScrollPane scrollPane = new ScrollPane();
+		scrollPane.setStyle("-fx-background-color:transparent;");
+		FlowPane ledGrid = new FlowPane();
+//		ledGrid.setPrefWrapLength(890);
+		for (int i = 0; i < maxLED; i++) {
+			Node n = myArduino.getChildren().get(i).GetPane(i);
+			n.maxHeight(Double.MAX_VALUE);
+			n.maxWidth(Double.MAX_VALUE);
+			ledGrid.getChildren().add(n); 
+		}
+//		ledGrid.setPadding(new Insets(5, 5, 5, 5)); 
+		
+		scrollPane.setContent(ledGrid);
+		return scrollPane;
+	}
+	
 	public Pane getCenter() {
 		return mainLayout;
 	}

@@ -1,6 +1,7 @@
 package com.stupro.uhc.arduino.children;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.regex.Pattern;
 
@@ -24,6 +25,8 @@ public abstract class Child {
 	protected HashMap<Integer,ArrayList<Modifier>> idToMyModifier;
 	
 	protected String name;
+	public abstract Collection<String> GetDatapackages();
+	
 	public abstract Node GetInnerPane();
 	public abstract Object GetValue();
 	private Node innerPane;
@@ -76,6 +79,12 @@ public abstract class Child {
 		return titl;
 	}
 	
+	public void AddModifier(Modifier m){
+		if(idToMyModifier.containsKey(m.getID())==false){
+			idToMyModifier.put(m.getID(),new ArrayList<Modifier>());
+		} 
+		idToMyModifier.get(m.getID()).add(m);
+	}
 	
 	public void HandleInfo(String info) {
 //		here is the specific data for the child

@@ -9,7 +9,7 @@ import javafx.scene.layout.Pane;
 
 public abstract class Modifier {
 	protected int ID;
-	public abstract void SendPerNetwork();
+	public abstract String GetPerNetwork(int child);
 	public abstract String GetName();
 	public abstract void Reset();
 	protected boolean isActive;

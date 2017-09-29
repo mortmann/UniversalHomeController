@@ -27,10 +27,11 @@ public class Timer extends Modifier {
 	}
 	
 	@Override
-	public void SendPerNetwork() {
-		String data = packetID+"_"+startHRText.getText()+","+startMINText.getText()+","+endHRText.getText()+","+endMINText.getText();
-		Network.Instance.SendPacketToArduino(data);
+	public String GetPerNetwork(int child) {
+		String data = packetID+"_"+child+","+startHR+","+startMIN+","+endHR+","+endMIN;
+		return data;
 	}
+	
 
 	@Override
 	protected Pane GetInnerPane() {

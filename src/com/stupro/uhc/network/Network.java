@@ -307,9 +307,12 @@ public class Network {
 	private void TestAddArduino(){
 		try {
 			InetAddress ip = InetAddress.getByName("111.111.111.111");
-			Arduino ar = new Arduino("AA:AA:AA:AA:AA", "TEST", null,"0001010000001");
-			ar.HandleInfo("<10;0;0;255<0;0;128;0(5[2])<0;0;0;255(6[7;41;8;19])< 0;0;128;0 < 0;0;0;255 < 0;0;128;0 < 0;0;0;255 < 0;0;128;0 < 0;0;0;255 < 0;0;128;0");
+			Arduino ar = new Arduino("AA:AA:AA:AA:AA", "TEST", null,"0001100000001");
+			ar.HandleInfo("<10;25;30;255<0;0;128;0(5[2])<0;0;0;255(6[7;41;8;19])< 0;0;128;0 < 0;0;0;255 < 0;0;128;0 < 0;0;0;255 < 0;0;128;0 < 0;0;0;255 < 0;0;128;0");
 //			SendDataForChildren(ar.GetNetworkData(), null);
+			for (String s : ar.GetNetworkDataCollection()) {
+				System.out.println("-"+s+"-");
+			}
 			arduinos.put(ip, ar);
 			Platform.runLater(new Runnable(){
 				@Override

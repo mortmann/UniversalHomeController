@@ -79,6 +79,7 @@ public class House {
 
 	public void load() {
 		for (Floor floor : floors) {
+			System.out.println(floor.getName());
 			floor.load(); 
 			floorToArduinos.put(floor,new ArrayList<>(floor.getArduinos()));
 		}

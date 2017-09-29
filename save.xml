@@ -2,16 +2,7 @@
    <floors class="com.sun.javafx.collections.ObservableListWrapper">
       <floor>
          <name>Test</name>
-         <arduinos>
-            <arduino>
-               <macAddress>AA:AA:AA:AA:AA</macAddress>
-               <name>TEST</name>
-               <x>307.0</x>
-               <y>157.0</y>
-               <isNew>true</isNew>
-               <isActive>true</isActive>
-            </arduino>
-         </arduinos>
+         <arduinos/>
          <pictureLocation>/images/testapartment.png</pictureLocation>
       </floor>
    </floors>

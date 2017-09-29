@@ -19,15 +19,19 @@ public class Repeater extends Modifier {
 	}
 
 	@Override
-	public void SendPerNetwork() {
-//		String data = packetID + "_" + child + "," + timeInSeconds;
+	public String GetPerNetwork(int child) {
+		String data = packetID + "_" + child + "," + timeInSeconds;
 //		Network.Instance.SendPacketToArduino(data);
+		return data;
 	}
 
 	@Override
 	protected Pane GetInnerPane() {
 		GridPane gridPane = new GridPane();
 		numberText = new NumberTextField();
+		numberText.textProperty().addListener(x->{
+			isActive = true;
+		});
 		if(isActive)
 			numberText.setText(timeInSeconds +" ");
 		gridPane.add(new Label("Time: "), 0, 2);

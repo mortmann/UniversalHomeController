@@ -2,6 +2,8 @@ package com.stupro.uhc.arduino;
 
 import java.net.InetAddress;
 import java.util.ArrayList;
+import java.util.Collection;
+
 import org.simpleframework.xml.Element;
 
 import com.stupro.uhc.arduino.children.Child;
@@ -9,23 +11,22 @@ import com.stupro.uhc.arduino.children.LED;
 
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ObservableValue;
-import javafx.geometry.Insets;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.layout.GridPane;
 
 public class Arduino {
 	@Element
-	private String macAddress; 
+	protected String macAddress; 
 	@Element
-	private String name;
+	protected String name;
 	@Element 
-	private double x = 0;
+	protected double x = 0;
 	@Element 
-	private double y = 0;
+	protected double y = 0;
 	@Element 
-	private boolean isNew = true;
+	protected boolean isNew = true;
 	@Element
-	private boolean isActive = true; 
+	protected boolean isActive = true; 
+	@Element
+	protected String metaData;
 	
 	private boolean timedOut = false; 
 	private ObservableValue<Boolean> timeout;
@@ -33,55 +34,71 @@ public class Arduino {
 	private ArrayList<Child> myChildren;
 	private InetAddress IPAddress;
 	
-	public Arduino(String id, String name, InetAddress IPAddress) {
+	
+	public Arduino(String id, String name, InetAddress IPAddress, String metaData) {
 		this.macAddress = id;
 		this.name = name;
-		active = new SimpleBooleanProperty(isActive).asObject();
-		timeout = new SimpleBooleanProperty(timedOut).asObject();
-
-		myChildren = new ArrayList<>();
-		this.setIPAddress(IPAddress);
+		this.metaData = metaData;
+		this.IPAddress=IPAddress;
+		initialize();
 	}
 	
 	//For loading
 	public Arduino(){
-		myChildren = new ArrayList<>();
+		initialize();
 	}
 
-	public ScrollPane GetBigLayout(){
-		int perColumn = 2;
-		int maxLED = myChildren.size(); // list.size() or smth gives 1-10 not 0-9
-		ScrollPane scrollPane = new ScrollPane();
-		scrollPane.setStyle("-fx-background-color:transparent;");
-		GridPane ledGrid = new GridPane();
-		for (int i = 0; i < maxLED; i++) {
-//			Button b1 = new Button("Save Color");
-//			b1.setOnAction(x-> Network.Instance.SendColorLED(num,(Color)myChildren.get(num).GetValue(),this));
-			ledGrid.add(myChildren.get(i).GetPane(i), (i%perColumn),i/perColumn);
+	private void initialize(){
+		myChildren = new ArrayList<>();
+		active = new SimpleBooleanProperty(isActive).asObject();
+		timeout = new SimpleBooleanProperty(timedOut).asObject();
+		String type = metaData.substring(0, 4);
+		System.out.println(metaData);
+		switch(type){
+		case "0001":
+			int childCount = Integer.parseInt(metaData.substring(4, 6),16);
+			for (int i = 0; i <= childCount; i++) {
+				myChildren.add(new LED(metaData.substring(6, metaData.length())));
+			}
+			break;
+		case "1001":
+			break;
+		case "0201":
+			break;
+		default:
+			break;
 		}
-		ledGrid.setPadding(new Insets(10, 10, 10, 10)); 
-		
-		scrollPane.setContent(ledGrid);
-		return scrollPane;
 	}
+	
+	
 	public void HandleInfo(String info){
 //		these are the cilds differentiated (most of the time it will have only 1)
 //		v										v
 //		<;;; (ID[;;][;;][;;]) ([;]) ([][]) <NEXT
 		setTimedOut(false);
 		String[] childs = info.split("<");
-		if(myChildren.size()>0){
-			return;
-		}
-		ArrayList<Child> leds = new ArrayList<Child>();
 		for(int i=1;i<childs.length;i++){
-			Child c = new LED(); // TODO: Make this semi automatic or full
-			c.HandleInfo(childs[i]);
-			leds.add(c); 
+			myChildren.get(i-1).HandleInfo(childs[i]);
 		}
-		myChildren.addAll(leds);
-		
 	}
+	public String GetNetworkData(){
+		String data = "";
+		for(Child c : myChildren){
+			data+=c.GetDataString();
+			data+="<";
+		}
+		return data;
+	}
+	public Collection<String> GetNetworkDataCollection(){
+		ArrayList<String> datas = new ArrayList<>();
+		for (int i=0; i<myChildren.size();i++) {
+			datas.addAll(myChildren.get(i).GetDatapackages(i));
+		}
+		datas.removeIf(x->x==null||x.trim().isEmpty());
+		return datas;
+	}
+	
+	
 	public void UpdatePosition(double x, double y){
 		this.x = x;
 		this.y = y;
@@ -152,5 +169,13 @@ public class Arduino {
 
 	public boolean isTimedOut() {
 		return timedOut;
+	}
+	public void ResetPosition(){
+		x=0;
+		y=0;
+	}
+
+	public ArrayList<Child> getChildren() {
+		return myChildren;
 	}
 }

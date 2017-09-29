@@ -68,7 +68,7 @@ public class TrayHandler {
             // create a tray icon with a image
             Image image = Toolkit.getDefaultToolkit().getImage("Source/images/tray.png");
             int trayIconWidth = new TrayIcon(image).getSize().width;
-            trayIcon = new TrayIcon(image.getScaledInstance(trayIconWidth, -1, Image.SCALE_SMOOTH), "Home Device Manager", popup);
+            trayIcon = new TrayIcon(image.getScaledInstance(trayIconWidth, -1, Image.SCALE_SMOOTH), "Universal Home Controller", popup);
             //add a menu to icon
             trayIcon.addActionListener(showListener);
             // add the tray image

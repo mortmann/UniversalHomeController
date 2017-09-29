@@ -3,6 +3,7 @@ package com.stupro.uhc;
 import java.awt.SystemTray;
 import java.awt.TrayIcon;
 import java.io.File;
+import java.util.ArrayList;
 
 import org.controlsfx.control.NotificationPane;
 import org.controlsfx.control.Notifications;
@@ -24,19 +25,26 @@ import com.stupro.uhc.ui.NewFloor;
 import com.stupro.uhc.ui.Options;
 
 import javafx.application.*;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.Toggle;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -53,7 +61,6 @@ public class GUI {
 	private BorderPane mainLayout;
 	public StackPane center;
 	private Scene scene;
-	private Label returnText;
 	private Network network;
 
 	private Arduino currSelectedArduino;
@@ -64,8 +71,6 @@ public class GUI {
 	private NewDevice newDeviceButton;
 	private ObservableList<Arduino> newArduinos;
 	
-	ComboBox<Floor> currFloorSelect;
-	
 	private Options options;
 	
 	//for windowdrag
@@ -73,6 +78,8 @@ public class GUI {
 	protected double yOffset;
 
 	private NotificationPane notification;
+
+	private ToggleGroup floorToggle;
 
 	
 	public GUI() {
@@ -89,29 +96,32 @@ public class GUI {
 		this.mainWindow = s;
 		mainWindow.setTitle("Universal Home Controller");
 		mainWindow.getIcons().setAll(new Image("/images/tray.png"));
-		mainWindow.initStyle(StageStyle.UNDECORATED);
+		mainWindow.initStyle(StageStyle.TRANSPARENT);
 		
 		mainStackPane = new StackPane();
-		myHouse = new House();
+//		mainStackPane.setStyle(""
+//				+ "-fx-background-color: rgba(0, 100, 100, 0);"
+//				+ "-fx-background-radius: 10 10 10 10;"
+//				+ "-fx-border-color: #5E83FF;"
+//                + "-fx-border-width: 3;");
+		
 		Serializer serializer = new Persister(new AnnotationStrategy());
-		try {
-			House os = serializer.read(House.class, new File("save.xml"));
-			myHouse = os;
-			myHouse.load();
-		} catch (Exception e) {
-			//if the file doesn´t exist or can´t be correctly read
-			//it´s gonna be catched here and thats fine
-		}	
-		network = new Network(this,myHouse.getAllArduinos());
-
+		
 		mainLayout= new BorderPane();
 		
 
 		Platform.setImplicitExit(false);
 		mainLayout.setCenter(center);
 		BorderPane.setAlignment(center, Pos.CENTER);
+		
 		//TODO: add menu on the top
 		mainStackPane.getChildren().add(mainLayout);
+		
+		mainLayout.setMaxWidth(1024);
+		mainLayout.setMaxHeight(720);
+		mainLayout.setPrefWidth(1024);
+		mainLayout.setPrefHeight(720);
+
 		scene = new Scene(mainStackPane,1024,720);
         scene.getStylesheets().add("stylesheet/bootstrap3.css");
 
@@ -120,15 +130,104 @@ public class GUI {
 		mainWindow.show();
 		
 		
-		changeToHouse();
+		
+	
+		
+		Pane left = new Pane();
+		left.setStyle("-fx-background-color: #1C8ADB;"); 
+		left.setPrefWidth(10);
+		mainLayout.setLeft(left);
+		
+
+		try {
+			House os = serializer.read(House.class, new File("save.xml"));
+			myHouse = os;
+			myHouse.load();
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			//if the file doesn´t exist or can´t be correctly read
+			//it´s gonna be catched here and thats fine
+			myHouse = new House();
+		}	
+		network = new Network(this,myHouse.getAllArduinos());
 		SetupRight();
 		SetupTop();
-		
+		SetupBottom();
+		changeToHouse();
 		
 		//SETUP
 //		String macAddress = "AA:BB:CC:DD:EE:FF";
 //		myHouse.AddAruinoToFloor(new Arduino(macAddress, "test", null), 0);
 		
+	}
+	
+	
+	private void SetupBottom() {
+		HBox buttonBox = new HBox();
+		floorToggle = new ToggleGroup();
+		floorToggle.selectedToggleProperty().addListener(new ChangeListener<Toggle>(){
+			public void changed(ObservableValue<? extends Toggle> ov,
+	            Toggle toggle, Toggle new_toggle) {
+				if(toggle!=null&&new_toggle!=null)
+					((ToggleButton)toggle).setStyle("-fx-background-color: White;");
+				if(new_toggle!=null)
+					((ToggleButton)new_toggle).setStyle("-fx-background-color: #98CCFD;");
+			}
+	                
+	    });
+		buttonBox.setAlignment(Pos.CENTER);
+		buttonBox.setSpacing(25);
+		for(Floor f : myHouse.getFloors()){
+			buttonBox.getChildren().add(CreateFloorToggleButton(f));
+		}
+		myHouse.getFloors().addListener(new ListChangeListener<Floor>() {
+			@Override
+			public void onChanged(javafx.collections.ListChangeListener.Change<? extends Floor> c) {
+				c.next();
+					
+				if(c.wasAdded())
+					buttonBox.getChildren().add(CreateFloorToggleButton(c.getAddedSubList().get(0)));
+				if(c.wasRemoved())
+					buttonBox.getChildren().removeIf(x->x.getUserData()==c.getRemoved().get(0));
+			}
+		});
+		GridPane bottom = new GridPane();
+		bottom.add(buttonBox,0,0);
+		bottom.setAlignment(Pos.CENTER);
+		bottom.setStyle("-fx-background-color: #1C8ADB;"); 
+		bottom.setPrefHeight(100);
+		mainLayout.setBottom(bottom);
+	}
+
+	private ToggleButton CreateFloorToggleButton(Floor f){
+		ToggleButton tgb = new ToggleButton();
+		VBox box = new VBox();
+		Image img = new Image(getCurrFloor().getPictureLocation());
+		ImageView iv = new ImageView(img);
+		tgb.setPrefSize(75, 75);
+		tgb.setMaxSize(75, 75);
+		if(img.getWidth()>img.getHeight()){
+            double scale = img.getHeight()/img.getWidth();
+            iv.setFitHeight(scale*75);
+            iv.setFitWidth(75);
+        } else {
+            double scale = img.getWidth()/img.getHeight();
+            iv.setFitWidth(scale*75);
+            iv.setFitHeight(75);
+        }
+		tgb.setOnAction(x->{
+			changeFloor(f);
+		});
+		if(f==getCurrFloor()){
+			tgb.setSelected(true);
+		}
+		tgb.setUserData(f);
+		tgb.setToggleGroup(floorToggle);
+		tgb.setGraphic(box);
+		box.setAlignment(Pos.CENTER);
+		box.getChildren().addAll(iv,new Label(f.getName()));
+		return tgb;
 	}
 	
 	
@@ -138,6 +237,25 @@ public class GUI {
 		FontAwesome fontAwesome = new FontAwesome();
 		Glyph cg = fontAwesome.create(FontAwesome.Glyph.CLOSE);
 		Button close = new Button("",cg);
+		
+		close.setOnMouseEntered(new EventHandler<MouseEvent>
+	    () {
+
+	        @Override
+	        public void handle(MouseEvent t) {
+	        	close.getStyleClass().add("danger");
+	        }
+	    });
+
+		close.setOnMouseExited(new EventHandler<MouseEvent>
+	    () {
+
+	        @Override
+	        public void handle(MouseEvent t) {
+	        	close.getStyleClass().remove("danger");
+	        }
+	    });
+		
 		close.setOnAction(x-> {END();});
 		Glyph ming = fontAwesome.create(FontAwesome.Glyph.MINUS);
 		Button minimize = new Button("",ming);
@@ -154,7 +272,10 @@ public class GUI {
 		buttonBox.setAlignment(Pos.TOP_RIGHT);
 //		buttonBox.setMinHeight(50);
 		buttonBox.setMaxHeight(50);
-		buttonBox.getChildren().addAll(minimize,maximize,close);
+		Label spacer = new Label();
+		spacer.setMinWidth(5);
+		spacer.setPrefWidth(10);
+		buttonBox.getChildren().addAll(minimize,maximize,close,spacer);
 		buttonBox.setOnMouseDragged(onMouseDraggedEventHandler);
 		buttonBox.setOnMousePressed(onMousePressed);
 		layer.getChildren().add(buttonBox);
@@ -167,44 +288,54 @@ public class GUI {
 		notification.setText("NEW Device found! Add it to any Floor to be able to configure it!");
 		notification.setGraphic(new ImageView(Notifications.class.getResource("/org/controlsfx/dialog/dialog-information.png").toExternalForm()));
 		notification.setManaged(false);
-		notification.setOnShowing(x->{notification.setManaged(true);});
-		notification.setOnHidden(x->{notification.setManaged(false);});
+		notification.setOnShowing(x->{
+			notification.setMinHeight(50);
+			notification.setManaged(true);
+			notification.setMouseTransparent(false);
+		});
+		notification.setOnHidden(x->{
+			notification.setMinHeight(0);
+			notification.setManaged(false);
+			notification.setMouseTransparent(true);
+		});
 		temp.getChildren().add(notification);
 		HBox.setHgrow(notification, Priority.ALWAYS);
-		
 		layer.getChildren().add(temp);
-
+		layer.setStyle("-fx-background-color: #1C8ADB;"); 
 		mainLayout.setTop(layer);
 //		notification.show();
 	}
 
 	private void SetupRight(){
 		VBox h = new VBox();
+		h.setAlignment(Pos.CENTER);
 		Glyph ng  = new FontAwesome().create(FontAwesome.Glyph.PLUS_CIRCLE);
 		ng.setFontSize(20);
 		newDeviceButton = new NewDevice();
-//		newDeviceButton.setOnAction(x->showNewDevices());
+		
 		options = new Options();
-		currFloorSelect = new ComboBox<>(myHouse.getFloors());
-		currFloorSelect.getSelectionModel().select(0);
-		currFloorSelect.setOnAction(x->ChangeFloor());
-		h.getChildren().addAll(options,newDeviceButton,currFloorSelect,new NewFloor());
+		NewFloor nf = new NewFloor();
+		h.getChildren().addAll(options,newDeviceButton,nf);
+		h.setStyle("-fx-background-color: #98CCFD;"
+				+ "-fx-border-color: #1C8ADB;"
+              + "-fx-border-width: 0 10 0 1; "); 
+
 		mainLayout.setRight(h);
 	}
 	
-	private void ChangeFloor() {
-		Floor f = currFloorSelect.getSelectionModel().getSelectedItem();
-		myHouse.ChangeCurrFloor(f);
+	public void changeFloor(Floor floor) {
+		if(myHouse.getCurrSelectedFloor().equals(floor)){
+			return;
+		}
+		myHouse.ChangeCurrFloor(floor);
 		changeToHouse();
 	}
 
 	public void HideNotificationBar(){
 		notification.hide();
+		options.toFront();
 	}
 
-	public void addReturnText(String s){
-		returnText.setText(returnText.getText() + "\n" + s);
-	}
 	public void END(){
 		Serializer serializer = new Persister(new AnnotationStrategy());
 		try {
@@ -247,6 +378,10 @@ public class GUI {
 	public void changeToHouse() {
 		center.getChildren().clear();
 		center.getChildren().add(myHouse.getCenter());
+		center.toBack();
+		center.maxWidth(1024-10-150);
+		center.prefWidth(1024-10-150);
+
 	} 
 	
 	public House getMyHouse() {
@@ -273,19 +408,31 @@ public class GUI {
 		public void handle(MouseEvent t) {
 			mainWindow.setX(t.getScreenX() + xOffset);
 			mainWindow.setY(t.getScreenY() + yOffset);
-
 		}
 	};
-
+	public Floor getCurrFloor(){
+		return myHouse.getCurrSelectedFloor();
+	}
 	public Stage getStage() {
 		return mainWindow;
 	}
 
 	public void ArduinoTimedOut(Arduino arduino) {
+		if(arduino==null){
+			return;
+		}
 		arduino.setTimedOut(true);
 	}
 
 	public ObservableList<Arduino> getNewArduinosObservableList() {
 		return newArduinos;
 	}
+
+	public void addAllArduino(ArrayList<Arduino> arrayList) {
+		for (Arduino arduino : arrayList) {
+			arduino.ResetPosition();
+		}
+		newArduinos.addAll(arrayList);
+	}
+
 }

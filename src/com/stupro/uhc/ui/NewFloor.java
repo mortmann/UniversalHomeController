@@ -181,4 +181,9 @@ public class NewFloor extends ButtonOver {
 	protected void onClose() {
 		
 	}
+	@Override
+	protected void onShowing() {
+		// TODO Auto-generated method stub
+		
+	}
 }

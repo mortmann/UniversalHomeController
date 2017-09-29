@@ -24,9 +24,12 @@ import javafx.scene.layout.StackPane;
 public class Floor {
 	
 	@Element(required=false)
-	private String name = "Test";
+	protected String name = "Test";
 	@ElementList
-	private ArrayList<Arduino> arduinos;
+	protected ArrayList<Arduino> arduinos;
+	@Element
+	protected String pictureLocation = "/images/testapartment.png";
+	
 	
 	HashMap<Arduino,Pane> arduinoToPane;
 	
@@ -44,19 +47,37 @@ public class Floor {
 	protected double orgScreenY;
 	protected boolean dragging;
 
-	
-	
+	public Floor(String pictureLocation){
+		this.pictureLocation = pictureLocation;
+		initialize();
+	}
 	public Floor(){
+		initialize();
+	}
+	
+	public void AddArduino(Arduino ar){
+		Pane p = new ArduinoSmallUI(ar);
+		arduinoToPane.put(ar, p);
+		System.out.println("arduinos " + ar);
+		if(arduinos.contains(ar)==false){// this is for loading
+			arduinos.add(ar);
+		}
+			
+		arduinoRoot.getChildren().add(p);
+		
+	}
+	
+	private void initialize(){
 		center = new StackPane();
 		arduinoToPane = new HashMap<>();
 		arduinos = new ArrayList<>();
-		Image image = new Image("/images/testapartment.png");
+		Image image = new Image(pictureLocation);
 		background = new ImageView(image);
 		maxX = image.getWidth();
 		maxY = image.getHeight();
 		background.setStyle("-fx-background-color: linear-gradient(to bottom, rgb(20,20,20), rgb(30,60,80));");
 		arduinoRoot = new Pane();
-
+		this.pictureLocation = pictureLocation;
 		arduinoRoot.setMaxHeight(maxY);
 		arduinoRoot.setMaxWidth(maxX);
 
@@ -71,14 +92,6 @@ public class Floor {
 		center.setOnMousePressed(onMousePressedEventHandler);
 		center.setOnMouseDragged(onMouseDraggedEventHandler);
 		center.setOnMouseReleased(onMouseDraggedEndEventHandler);
-	}
-	
-	public void AddArduino(Arduino ar){
-		Pane p = new ArduinoSmallUI(ar);
-		arduinoToPane.put(ar, p);
-		if(arduinos.contains(ar)==false) // this is for loading
-			arduinos.add(ar);
-		arduinoRoot.getChildren().add(p);
 	}
 	
 	public void RemoveArduino(Arduino adr) {
@@ -198,6 +211,7 @@ public class Floor {
 
 	public void load() {
 		for (Arduino arduino : arduinos) {
+			System.out.println(arduino.getName());
 			AddArduino(arduino);
 		}
 	}
@@ -205,4 +219,22 @@ public class Floor {
 	public Collection<? extends Arduino> getArduinos() {
 		return arduinos;
 	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if(obj instanceof Floor == false){
+			return false;
+		}
+		Floor f = (Floor) obj;
+		return name.equals(f.name);
+	}
+
+	public void setPictureLocation(String fileLocation) {
+		this.pictureLocation = fileLocation;
+	}
+
+	public String getPictureLocation() {
+		return pictureLocation;
+	}
+	
 }

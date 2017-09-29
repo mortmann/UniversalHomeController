@@ -1,6 +1,5 @@
 package com.stupro.uhc.arduino.modifier;
 
-import com.stupro.uhc.network.Network;
 import com.stupro.uhc.util.NumberTextField;
 
 import javafx.scene.control.Label;
@@ -14,30 +13,52 @@ public class Repeater extends Modifier {
 
 	private NumberTextField numberText;
 	
-	public Repeater(int timeInSeconds,int child){
-		this.timeInSeconds = timeInSeconds;
+	public Repeater(){
+		ID = packetID;
+
 	}
 
 	@Override
-	public void SendPerNetwork() {
+	public String GetPerNetwork(int child) {
 		String data = packetID + "_" + child + "," + timeInSeconds;
-		Network.Instance.SendPacketToArduino(data);
+//		Network.Instance.SendPacketToArduino(data);
+		return data;
 	}
 
 	@Override
-	public Pane GetPane() {
+	protected Pane GetInnerPane() {
 		GridPane gridPane = new GridPane();
-		gridPane.add(new Label("Blink Repeat"), 0, 2);
 		numberText = new NumberTextField();
+		numberText.textProperty().addListener(x->{
+			isActive = true;
+		});
+		if(isActive)
+			numberText.setText(timeInSeconds +" ");
+		gridPane.add(new Label("Time: "), 0, 2);
 		gridPane.add(numberText, 1, 2);
-		return null;
+		return gridPane;
 	}
 
 	@Override
 	protected void HandleSpecificData(String[] data) {
-		for (String string : data) {
-			System.out.println(string);
-		}		
+		isActive = true;
+		timeInSeconds = Integer.parseInt(data[0]);		
+	}
+
+	@Override
+	public String GetName() {
+		return "Blink Repeat";
+	}
+
+	@Override
+	public void Reset() {
+		timeInSeconds = 0;
+		isActive = false;
+	}
+
+	@Override
+	public String GetParameterInfo() {
+		return ""+timeInSeconds+"";
 	}
 	
 	

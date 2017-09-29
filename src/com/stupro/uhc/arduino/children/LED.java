@@ -1,6 +1,7 @@
 package com.stupro.uhc.arduino.children;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 
 import com.stupro.uhc.arduino.modifier.Modifier;
@@ -65,12 +66,6 @@ public class LED extends Child {
 		idToMyModifier.put(6, mods);
 		dimmSlider = new Slider(0,maxBrightness,maxBrightness);
 		
-	}
-	public void AddModifier(Modifier m){
-		if(idToMyModifier.containsKey(m.getID())==false){
-			idToMyModifier.put(m.getID(),new ArrayList<Modifier>());
-		} 
-		idToMyModifier.get(m.getID()).add(m);
 	}
 	
 	public double GetRedDouble(){
@@ -138,6 +133,10 @@ public class LED extends Child {
 	protected String GetSpecificData() {
 		String active = isActive()? "1" : "0";
 		return active+";"+red+";"+green+";"+blue+";"+dimmLevel+";";
+	}
+	@Override
+	public Collection<String> GetDatapackages() {
+		return null;
 	}
 
 	

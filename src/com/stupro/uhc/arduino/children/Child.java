@@ -25,7 +25,7 @@ public abstract class Child {
 	protected HashMap<Integer,ArrayList<Modifier>> idToMyModifier;
 	
 	protected String name;
-	public abstract Collection<String> GetDatapackages();
+	public abstract Collection<String> GetDatapackages(int child);
 	
 	public abstract Node GetInnerPane();
 	public abstract Object GetValue();

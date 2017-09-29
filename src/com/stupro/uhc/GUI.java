@@ -145,6 +145,7 @@ public class GUI {
 			myHouse.load();
 			
 		} catch (Exception e) {
+			e.printStackTrace();
 			//if the file doesn´t exist or can´t be correctly read
 			//it´s gonna be catched here and thats fine
 			myHouse = new House();

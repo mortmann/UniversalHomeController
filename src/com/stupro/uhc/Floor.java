@@ -24,7 +24,7 @@ import javafx.scene.layout.StackPane;
 public class Floor {
 	
 	@Element(required=false)
-	private String name = "Test";
+	protected String name = "Test";
 	@ElementList
 	protected ArrayList<Arduino> arduinos;
 	@Element
@@ -47,9 +47,27 @@ public class Floor {
 	protected double orgScreenY;
 	protected boolean dragging;
 
-	
-	
 	public Floor(String pictureLocation){
+		this.pictureLocation = pictureLocation;
+		initialize();
+	}
+	public Floor(){
+		initialize();
+	}
+	
+	public void AddArduino(Arduino ar){
+		Pane p = new ArduinoSmallUI(ar);
+		arduinoToPane.put(ar, p);
+		System.out.println("arduinos " + ar);
+		if(arduinos.contains(ar)==false){// this is for loading
+			arduinos.add(ar);
+		}
+			
+		arduinoRoot.getChildren().add(p);
+		
+	}
+	
+	private void initialize(){
 		center = new StackPane();
 		arduinoToPane = new HashMap<>();
 		arduinos = new ArrayList<>();
@@ -74,15 +92,6 @@ public class Floor {
 		center.setOnMousePressed(onMousePressedEventHandler);
 		center.setOnMouseDragged(onMouseDraggedEventHandler);
 		center.setOnMouseReleased(onMouseDraggedEndEventHandler);
-	}
-	
-	public void AddArduino(Arduino ar){
-		Pane p = new ArduinoSmallUI(ar);
-		arduinoToPane.put(ar, p);
-		if(arduinos.contains(ar)==false) // this is for loading
-			arduinos.add(ar);
-		arduinoRoot.getChildren().add(p);
-		
 	}
 	
 	public void RemoveArduino(Arduino adr) {
@@ -202,6 +211,7 @@ public class Floor {
 
 	public void load() {
 		for (Arduino arduino : arduinos) {
+			System.out.println(arduino.getName());
 			AddArduino(arduino);
 		}
 	}

@@ -34,6 +34,8 @@ public class LED extends Child {
 	
 	public LED(String metaData) {
 		name = "LED";
+		this.idToMyModifier = new HashMap<>();
+
 		String colorRangeMeta = metaData.substring(0, 2);
 		switch(colorRangeMeta){
 			case "00":colorRange=110;
@@ -55,15 +57,25 @@ public class LED extends Child {
 		
 		String lightmode = metaData.substring(4, 6);
 		String timer = metaData.substring(6, 7);
+		switch(timer){
+		case "1": 
+			ArrayList<Modifier> mods = new ArrayList<>();
+			mods = new ArrayList<>();
+			mods.add(new Timer());
+			idToMyModifier.put(6, mods);
+			break;
+		}
 		cp = new ColorPicker();
 		cp.setValue(new Color((double)red/colorRange, (double)green/colorRange, (double)blue/colorRange,1));
-		this.idToMyModifier = new HashMap<>();
+		cp.valueProperty().addListener(x->{
+			red = (int) (cp.getValue().getRed() * 255);
+			green = (int) (cp.getValue().getGreen() * 255);
+			blue = (int) (cp.getValue().getBlue() * 255);
+		});
 		ArrayList<Modifier> mods = new ArrayList<>();
 		mods.add(new Repeater());
 		idToMyModifier.put(5, mods);
-		mods = new ArrayList<>();
-		mods.add(new Timer());
-		idToMyModifier.put(6, mods);
+		
 		dimmSlider = new Slider(0,maxBrightness,maxBrightness);
 		
 	}
@@ -122,6 +134,9 @@ public class LED extends Child {
 		int blue = Integer.parseInt(data[2].trim());
 		int dimmLevel = Integer.parseInt(data[3].trim());
 		if(red !=this.red || green!=this.green || blue != this.blue){
+			this.red = red;
+			this.blue = blue;
+			this.green = green;
 			cp.setValue(new Color((double)red/255.0, (double)green/255.0, (double)blue/255.0,1));
 		}
 		if(dimmLevel!=this.dimmLevel){
@@ -135,8 +150,23 @@ public class LED extends Child {
 		return active+";"+red+";"+green+";"+blue+";"+dimmLevel+";";
 	}
 	@Override
-	public Collection<String> GetDatapackages() {
-		return null;
+	public Collection<String> GetDatapackages(int child) {
+		ArrayList<String> myStrings = new ArrayList<String>();
+		String myData = "4_"+child+ "," +red+","+green+","+blue+","+maxBrightness;
+		
+		for(int id : idToMyModifier.keySet()){
+			ArrayList<Modifier> mods = idToMyModifier.get(id);
+			String temp ="";
+			for(Modifier m : mods){
+				if(m.isActive()==false){
+					continue;
+				}
+				temp += m.GetPerNetwork(child);
+			}	
+			myStrings.add(temp);
+		}
+		myStrings.add(myData);
+		return myStrings;
 	}
 
 	

@@ -6,124 +6,23 @@
             <arduino>
                <macAddress>AA:AA:AA:AA:AA</macAddress>
                <name>TEST</name>
-               <x>271.0</x>
-               <y>153.0</y>
-               <isNew>true</isNew>
-               <isActive>true</isActive>
-            </arduino>
-            <arduino>
-               <macAddress>AA:AA:AA:AA:AA</macAddress>
-               <name>TEST</name>
-               <x>315.0</x>
-               <y>113.0</y>
-               <isNew>true</isNew>
-               <isActive>true</isActive>
-            </arduino>
-            <arduino>
-               <macAddress>AA:AA:AA:AA:AA</macAddress>
-               <name>TEST</name>
                <x>0.0</x>
                <y>0.0</y>
                <isNew>true</isNew>
                <isActive>true</isActive>
+               <metaData>000E011111</metaData>
             </arduino>
             <arduino>
-               <macAddress>AA:AA:AA:AA:AA</macAddress>
-               <name>TEST</name>
-               <x>252.0</x>
-               <y>213.0</y>
+               <macAddress>DE:AD:BE:EF:FE:ED</macAddress>
+               <name>LED Kette</name>
+               <x>79.0</x>
+               <y>106.0</y>
                <isNew>true</isNew>
                <isActive>true</isActive>
-            </arduino>
-            <arduino>
-               <macAddress>AA:AA:AA:AA:AA</macAddress>
-               <name>TEST</name>
-               <x>373.0</x>
-               <y>223.0</y>
-               <isNew>true</isNew>
-               <isActive>true</isActive>
-            </arduino>
-            <arduino>
-               <macAddress>AA:AA:AA:AA:AA</macAddress>
-               <name>TEST</name>
-               <x>429.0</x>
-               <y>227.0</y>
-               <isNew>true</isNew>
-               <isActive>true</isActive>
-            </arduino>
-            <arduino>
-               <macAddress>AA:AA:AA:AA:AA</macAddress>
-               <name>TEST</name>
-               <x>322.0</x>
-               <y>179.0</y>
-               <isNew>true</isNew>
-               <isActive>true</isActive>
-            </arduino>
-            <arduino>
-               <macAddress>AA:AA:AA:AA:AA</macAddress>
-               <name>TEST</name>
-               <x>0.0</x>
-               <y>0.0</y>
-               <isNew>true</isNew>
-               <isActive>true</isActive>
-            </arduino>
-            <arduino>
-               <macAddress>AA:AA:AA:AA:AA</macAddress>
-               <name>TEST</name>
-               <x>0.0</x>
-               <y>0.0</y>
-               <isNew>true</isNew>
-               <isActive>true</isActive>
-            </arduino>
-            <arduino>
-               <macAddress>AA:AA:AA:AA:AA</macAddress>
-               <name>TEST</name>
-               <x>317.0</x>
-               <y>129.0</y>
-               <isNew>true</isNew>
-               <isActive>true</isActive>
-            </arduino>
-            <arduino>
-               <macAddress>AA:AA:AA:AA:AA</macAddress>
-               <name>TEST</name>
-               <x>0.0</x>
-               <y>0.0</y>
-               <isNew>true</isNew>
-               <isActive>true</isActive>
-            </arduino>
-            <arduino>
-               <macAddress>AA:AA:AA:AA:AA</macAddress>
-               <name>TEST</name>
-               <x>0.0</x>
-               <y>0.0</y>
-               <isNew>true</isNew>
-               <isActive>true</isActive>
-            </arduino>
-            <arduino>
-               <macAddress>AA:AA:AA:AA:AA</macAddress>
-               <name>TEST</name>
-               <x>0.0</x>
-               <y>0.0</y>
-               <isNew>true</isNew>
-               <isActive>true</isActive>
-            </arduino>
-            <arduino>
-               <macAddress>AA:AA:AA:AA:AA</macAddress>
-               <name>TEST</name>
-               <x>0.0</x>
-               <y>0.0</y>
-               <isNew>true</isNew>
-               <isActive>true</isActive>
-            </arduino>
-            <arduino>
-               <macAddress>AA:AA:AA:AA:AA</macAddress>
-               <name>TEST</name>
-               <x>0.0</x>
-               <y>0.0</y>
-               <isNew>true</isNew>
-               <isActive>true</isActive>
+               <metaData>0001100000001</metaData>
             </arduino>
          </arduinos>
+         <pictureLocation>/images/testapartment.png</pictureLocation>
       </floor>
    </floors>
 </house>

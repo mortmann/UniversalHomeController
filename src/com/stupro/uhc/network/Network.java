@@ -19,13 +19,13 @@ import java.util.concurrent.TimeUnit;
 
 import com.stupro.uhc.GUI;
 import com.stupro.uhc.arduino.Arduino;
+import com.stupro.uhc.database.DatabaseIntegration;
 import com.stupro.uhc.misc.Sound;
 import com.stupro.uhc.misc.Sound.Clip;
 
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
-import javafx.scene.paint.Color;
 
 // 0 = broadcast
 // 1 = heartbeat
@@ -46,7 +46,8 @@ public class Network {
 	private ArrayList<InetAddress> inetAdresses;
 	private HashMap<String,Arduino> macToArduinos;
 	private HashMap<InetAddress,Arduino> arduinos;
-	
+	DatabaseIntegration database;
+
 	private GUI gui;
 
 	private InetAddress myAddress;
@@ -54,6 +55,7 @@ public class Network {
 	public Network(GUI gui, Collection<Arduino> collection) {
 		Instance = this;
 		macToArduinos = new HashMap<>();
+		database = new DatabaseIntegration();
 		addAllExisitingArduinos(collection);
 		try {
 			clientSocket = new DatagramSocket(8888);
@@ -111,11 +113,16 @@ public class Network {
 					int type = Integer.parseInt(splitData[0]);
 
 					switch(type){
-						case 0: 
+						case 0://this is other programms broadcast do nothing
+						break;
+						case 1: 
 							if(inetAdresses.contains(IPAddress) == false){
 								inetAdresses.add(IPAddress);
 								ipToTimer.put(IPAddress, System.currentTimeMillis());
 								String mac = splitData[2];
+								int typeID = Integer.parseInt(splitData[3]);
+								String metaData = database.getMetaDataForID(typeID);
+								
 								//we already have this arduino but not this new ip
 								//or we are loading and finding the ip´s 
 								if(macToArduinos.containsKey(mac)){
@@ -123,7 +130,7 @@ public class Network {
 									break;
 								}
 								//we do not know this one so add a new Arduino
-								Arduino ar = new Arduino(mac, "placeholder", IPAddress);
+								Arduino ar = new Arduino(mac, database.getNameForID(typeID) , IPAddress , metaData);
 								arduinos.put(IPAddress, ar);
 								macToArduinos.put(mac,ar);
 								
@@ -137,14 +144,14 @@ public class Network {
 								});
 							}
 						break;
-						case 1:
+						case 2:
 							break;
-						case 2: 
+						case 3: 
 							//Heartbeat update timeouttimer
 							ipToTimer.replace(IPAddress, System.currentTimeMillis());
 							HandleInfo(splitData[1],IPAddress);
 							break;
-						case 3: //received command -> update?
+						case 4: //received command -> update?
 							System.out.println(splitData[1]);
 							break;
 						default:
@@ -223,36 +230,6 @@ public class Network {
 	}
 	
 	
-	public void SendColorLED(int led,Color c,Arduino ar){
-		if(ar.getIPAddress() == null){
-			return;
-		}
-		byte[] sendData = new byte[1024];
-		String s ="4_"+ led+","+(int)(c.getRed()*255)+","+(int)(c.getGreen()*255)+","+(int)(c.getBlue()*255);
-		System.out.println(s);
-		sendData = s.getBytes();
-		DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, ar.getIPAddress(), 8888);
-		try {
-			clientSocket.send(sendPacket);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-	public void SendTimeRepeatLED(int led, int secRepeatTime,Arduino ar){
-		if(ar.getIPAddress() == null){
-			return;
-		}
-		byte[] sendData = new byte[1024];
-		String s ="5_"+ led+","+secRepeatTime;
-		System.out.println(s);
-		sendData = s.getBytes();
-		DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, ar.getIPAddress(), 8888);
-		try {
-			clientSocket.send(sendPacket);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
 	
 	public void SendPacketToArduino(String data){
 		SendPacketToThisArduino(data, gui.getCurrSelectedArduino());
@@ -268,10 +245,46 @@ public class Network {
 		clientSocket.close();
 		
 	}
+	public void SendDataForChildren(String data, Arduino arduino){
+		String[] diffrentChild = data.split("<");
+		ArrayList<String> dataToSend = new ArrayList<>();
+		if(data.length()>100){
+			String temp = "";
+			for (int i = 0; i < diffrentChild.length; ) {
+				while((temp+diffrentChild[i]+"<").length()<100-10){
+					if(i>=diffrentChild.length-1){
+						i=Integer.MAX_VALUE;
+						break;
+					}
+					temp+=diffrentChild[i]+"<";
+					i++;
+					
+				}
+				dataToSend.add(temp);
+				temp="";
+			}
+			
+			for (int i = 0; i < dataToSend.size(); i++) {
+				String send = 5+"_"+i+"_"+dataToSend.size()+"_" + dataToSend.get(i);
+				actualSendPacket(send,arduino);
+			}
+		} else {
+			actualSendPacket(data,arduino);
+		}
+	}
+	
 	public void SendPacketToThisArduino(String data, Arduino arduino) {
 		if(arduino.getIPAddress() == null){
 			return;
 		}
+		actualSendPacket(data,arduino);
+	}
+	/**
+	 * 
+	 * @param data length MUST be <100 because arduino
+	 * cant handle the truth (longer strings)
+	 */
+	private void actualSendPacket(String data, Arduino arduino){
 		byte[] sendData = new byte[1024];
 		sendData = data.getBytes();
 		DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, arduino.getIPAddress(), 8888);
@@ -280,9 +293,8 @@ public class Network {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
-		
 	}
+	
 	public void addAllExisitingArduinos(Collection<Arduino> allArduinos) {
 		if(allArduinos==null){
 			return;
@@ -292,12 +304,15 @@ public class Network {
 		}
 	}
 	
-	
 	private void TestAddArduino(){
 		try {
 			InetAddress ip = InetAddress.getByName("111.111.111.111");
-			Arduino ar = new Arduino("AA:AA:AA:AA:AA", "TEST", null);
-			ar.HandleInfo("<10;0;0;255(5[])<0;0;128;0(5[1;2])<0;0;0;255(5[])< 0;0;128;0(5[]) < 0;0;0;255(5[]) < 0;0;128;0(5[]) < 0;0;0;255(5[]) < 0;0;128;0(5[]) < 0;0;0;255(5[]) < 0;0;128;0(5[])");
+			Arduino ar = new Arduino("AA:AA:AA:AA:AA", "TEST", null,"000E011111");
+//			ar.HandleInfo("<10;25;30;255<0;0;128;0(5[2])<0;0;0;255(6[7;41;8;19])< 0;0;128;0 < 0;0;0;255 < 0;0;128;0 < 0;0;0;255 < 0;0;128;0 < 0;0;0;255 < 0;0;128;0");
+//			SendDataForChildren(ar.GetNetworkData(), null);
+			for (String s : ar.GetNetworkDataCollection()) {
+				System.out.println("-"+s+"-");
+			}
 			arduinos.put(ip, ar);
 			Platform.runLater(new Runnable(){
 				@Override

@@ -20,6 +20,8 @@ import javafx.scene.paint.Color;
 public class NewDevice extends ButtonOver {
 	
 	Label numberOfDevices;
+	private Button add;
+	private ComboBox<Floor> floor;
 	
 	public NewDevice() {
 		super("New Device",FontAwesome.Glyph.PLUS_CIRCLE);
@@ -55,10 +57,11 @@ public class NewDevice extends ButtonOver {
 				UpdateNumberLabel();
 			}
 		});
-		ComboBox<Floor> floor = new ComboBox<Floor>(GUI.Instance.getMyHouse().getFloors());
+		floor = new ComboBox<Floor>(GUI.Instance.getMyHouse().getFloors());
 		floor.getSelectionModel().select(0);
 		vbox.getChildren().add(CreateHBox(new Label("Choose Floor:"),floor));
-		Button add = new Button("ADD");
+		add = new Button("ADD");
+		add.setDisable(true);
 		add.setOnAction(x->{ 
 			GUI.Instance.getMyHouse().AddAruinoToFloor(arduinos.getSelectionModel().getSelectedItem(), floor.getSelectionModel().getSelectedItem());
 			newArduinos.remove(arduinos.getSelectionModel().getSelectedItem());
@@ -73,9 +76,15 @@ public class NewDevice extends ButtonOver {
 			if(reference.getChildren().contains(numberOfDevices)==false)
 				reference.getChildren().add(numberOfDevices);
 			numberOfDevices.setText(" " + numberOfNewArduinos+ " ");
+			if(add!=null){
+				add.setDisable(false);
+			}
 		} else {
 			if(reference.getChildren().contains(numberOfDevices))
 				reference.getChildren().remove(numberOfDevices);
+			if(add!=null){
+				add.setDisable(true);
+			}
 		}
 		numberOfDevices.toFront();
 	}
@@ -89,5 +98,9 @@ public class NewDevice extends ButtonOver {
 	protected void onClose() {
 		
 	}
-
+	@Override
+	protected void onShowing() {
+		System.out.println("onShowing");
+		floor.getSelectionModel().select(GUI.Instance.getCurrFloor());
+	}
 }

@@ -22,9 +22,9 @@ public class Arduino {
 	@Element 
 	protected double y = 0;
 	@Element 
-	protected boolean isNew = true;
+	protected boolean isNew;
 	@Element
-	protected boolean isActive = true; 
+	protected boolean isActive; 
 	@Element
 	protected String metaData;
 	
@@ -40,12 +40,14 @@ public class Arduino {
 		this.name = name;
 		this.metaData = metaData;
 		this.IPAddress=IPAddress;
+		isNew = true;
+		isActive = true;
 		initialize();
 	}
 	
 	//For loading
 	public Arduino(){
-		initialize();
+		
 	}
 
 	private void initialize(){
@@ -53,11 +55,11 @@ public class Arduino {
 		active = new SimpleBooleanProperty(isActive).asObject();
 		timeout = new SimpleBooleanProperty(timedOut).asObject();
 		String type = metaData.substring(0, 4);
-		System.out.println(metaData);
 		switch(type){
 		case "0001":
 			int childCount = Integer.parseInt(metaData.substring(4, 6),16);
-			for (int i = 0; i <= childCount; i++) {
+			System.out.println(childCount +" = " +metaData.substring(4, 6));
+			for (int i = 0; i < childCount; i++) {
 				myChildren.add(new LED(metaData.substring(6, metaData.length())));
 			}
 			break;
@@ -177,5 +179,9 @@ public class Arduino {
 
 	public ArrayList<Child> getChildren() {
 		return myChildren;
+	}
+
+	public void load() {
+		initialize();		
 	}
 }

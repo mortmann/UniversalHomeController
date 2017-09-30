@@ -5,5 +5,20 @@
          <arduinos/>
          <pictureLocation>/images/testapartment.png</pictureLocation>
       </floor>
+      <floor>
+         <name>Flur 1</name>
+         <arduinos/>
+         <pictureLocation>file:///C:\Users\Mortmann MK IV\Downloads\testapartment_2.png</pictureLocation>
+      </floor>
+      <floor>
+         <name>werd</name>
+         <arduinos/>
+         <pictureLocation>file:///C:\Users\Mortmann MK IV\Downloads\testapartment_2.png</pictureLocation>
+      </floor>
+      <floor>
+         <name>awfsdjnb</name>
+         <arduinos/>
+         <pictureLocation>file:///C:\Users\Mortmann MK IV\Downloads\testapartment_2.png</pictureLocation>
+      </floor>
    </floors>
 </house>

@@ -99,11 +99,6 @@ public class GUI {
 		mainWindow.initStyle(StageStyle.TRANSPARENT);
 		
 		mainStackPane = new StackPane();
-//		mainStackPane.setStyle(""
-//				+ "-fx-background-color: rgba(0, 100, 100, 0);"
-//				+ "-fx-background-radius: 10 10 10 10;"
-//				+ "-fx-border-color: #5E83FF;"
-//                + "-fx-border-width: 3;");
 		
 		Serializer serializer = new Persister(new AnnotationStrategy());
 		

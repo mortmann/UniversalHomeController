@@ -31,6 +31,7 @@ public class Repeater extends Modifier {
 		numberText = new NumberTextField();
 		numberText.textProperty().addListener(x->{
 			isActive = true;
+			timeInSeconds = numberText.GetIntValue();
 		});
 		if(isActive)
 			numberText.setText(timeInSeconds +" ");

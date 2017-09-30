@@ -46,7 +46,7 @@ public class DatabaseIntegration {
 				PreparedStatement prep = con.prepareStatement("INSERT INTO smartHomeObject values(?,?,?,?,?);");
 				
 				prep.setString(2, "LED Kette");
-				prep.setString(3, "0001100000001");
+				prep.setString(3, "00010A0000001");
 				prep.setString(4, "1");
 				prep.setString(5, "Light");
 				prep.execute();

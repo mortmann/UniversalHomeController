@@ -113,6 +113,7 @@ public class NewFloor extends ButtonOver {
     	}
     	errorLabel.setText("");
     	popOver.hide();
+    	System.out.println(fileLocation);
     	GUI.Instance.getMyHouse().createNewFloor(fileLocation,name);
 	}
 	void addImage(String string){

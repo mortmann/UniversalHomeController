@@ -1,9 +1,5 @@
 package com.stupro.uhc;
 
-import java.sql.ResultSet;
-
-import com.stupro.uhc.database.DatabaseIntegration;
-
 import javafx.application.Application;
 import javafx.stage.Stage;
 

@@ -126,6 +126,7 @@ public class Network {
 								//we already have this arduino but not this new ip
 								//or we are loading and finding the ip´s 
 								if(macToArduinos.containsKey(mac)){
+									macToArduinos.get(mac).setIPAddress(IPAddress);
 									arduinos.put(IPAddress, macToArduinos.get(mac));
 									break;
 								}
@@ -277,6 +278,7 @@ public class Network {
 		if(arduino.getIPAddress() == null){
 			return;
 		}
+		System.out.println("send " + data );
 		actualSendPacket(data,arduino);
 	}
 	/**
@@ -305,24 +307,33 @@ public class Network {
 	}
 	
 	private void TestAddArduino(){
-		try {
-			InetAddress ip = InetAddress.getByName("111.111.111.111");
-			Arduino ar = new Arduino("AA:AA:AA:AA:AA", "TEST", null,"0001100000001");
-			ar.HandleInfo("<10;25;30;255<0;0;128;0(5[2])<0;0;0;255(6[7;41;8;19])< 0;0;128;0 < 0;0;0;255 < 0;0;128;0 < 0;0;0;255 < 0;0;128;0 < 0;0;0;255 < 0;0;128;0");
-//			SendDataForChildren(ar.GetNetworkData(), null);
-			for (String s : ar.GetNetworkDataCollection()) {
-				System.out.println("-"+s+"-");
+//		try {
+//			InetAddress ip = InetAddress.getByName("111.111.111.111");
+//			Arduino ar = new Arduino("AA:AA:AA:AA:AA", "TEST", null,"0001100000001");
+//			ar.HandleInfo("<10;25;30;255<0;0;128;0(5[2])<0;0;0;255(6[7;41;8;19])< 0;0;128;0 < 0;0;0;255 < 0;0;128;0 < 0;0;0;255 < 0;0;128;0 < 0;0;0;255 < 0;0;128;0");
+////			SendDataForChildren(ar.GetNetworkData(), null);
+//			
+//			arduinos.put(ip, ar);
+//			Platform.runLater(new Runnable(){
+//				@Override
+//				public void run() {
+//					gui.AddArduino(arduinos.get(ip));
+//				}
+//			});
+//			
+//		} catch (UnknownHostException e) {
+//			e.printStackTrace();
+//		}
+	}
+	public void SendPacketToArduino(Collection<String> getNetworkDataCollection) {
+		SendPacketToArduino("7_disableAllTheThings");
+		for (String string : getNetworkDataCollection) {
+			SendPacketToArduino(string);
+			try {
+				Thread.sleep(50);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
 			}
-			arduinos.put(ip, ar);
-			Platform.runLater(new Runnable(){
-				@Override
-				public void run() {
-					gui.AddArduino(arduinos.get(ip));
-				}
-			});
-			
-		} catch (UnknownHostException e) {
-			e.printStackTrace();
 		}
 	}
 }

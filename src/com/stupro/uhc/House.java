@@ -44,7 +44,10 @@ public class House {
 	}
 	
 	public void createNewFloor(String fileLocation, String name){
-		Floor f = new Floor(fileLocation);
+		if(floors.filtered(x->x.getName().equals(name)).size()>0){
+			return; // prevent the creation of two floors with same name
+		}
+		Floor f = new Floor(name,fileLocation);
 		floorToArduinos.put(f, new ArrayList<Arduino>());
 		floors.add(f);
 	}
@@ -79,7 +82,6 @@ public class House {
 
 	public void load() {
 		for (Floor floor : floors) {
-			System.out.println(floor.getName());
 			floor.load(); 
 			floorToArduinos.put(floor,new ArrayList<>(floor.getArduinos()));
 		}

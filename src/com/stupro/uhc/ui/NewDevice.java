@@ -100,7 +100,6 @@ public class NewDevice extends ButtonOver {
 	}
 	@Override
 	protected void onShowing() {
-		System.out.println("onShowing");
 		floor.getSelectionModel().select(GUI.Instance.getCurrFloor());
 	}
 }

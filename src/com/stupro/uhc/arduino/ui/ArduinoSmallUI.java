@@ -89,6 +89,7 @@ public class ArduinoSmallUI extends StackPane {
 			if (mouseEvent.getButton().equals(MouseButton.PRIMARY)) {
 				if (myArduino.isNew()) {
 					newLabel.setVisible(false);
+					myArduino.setNew(false);
 				}
 				if (mouseEvent.getClickCount() == 2) {
 					GUI.Instance.changeCenterToArduino(myArduino);
@@ -104,6 +105,7 @@ public class ArduinoSmallUI extends StackPane {
 		public void handle(MouseEvent t) {
 			if (myArduino.isNew()) {
 				newLabel.setVisible(false);
+				myArduino.setNew(false);
 			}
 			reference.setTranslateZ(10);
 			orgSceneX = t.getSceneX();
@@ -127,7 +129,7 @@ public class ArduinoSmallUI extends StackPane {
 		public void handle(MouseEvent t) {
 			t.consume();
 			Point2D point = (reference.getParent().sceneToLocal(new Point2D(t.getSceneX(), t.getSceneY())));
-			if (Floor.outSideBounds(point)) {
+			if (GUI.Instance.getCurrFloor().outSideBounds(point)) {
 				return;
 			}
 			reference.setTranslateX(point.getX() - width / 2);

@@ -1,12 +1,11 @@
 package com.stupro.uhc;
 
-
 import javafx.application.Application;
 import javafx.stage.Stage;
 
 public class Main extends Application {
 	public static void main(String args[]) throws Exception {
-//		//Database call 
+		//Database call 
 //				DatabaseIntegration test = new DatabaseIntegration();
 //				ResultSet rs;
 //				rs = test.displaySHO();

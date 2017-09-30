@@ -33,7 +33,8 @@ public class ArduinoBigUI {
 		HBox top = new HBox();
 		Button back = new Button();
 		back.setText("<-");
-		Label label = new Label("Floor:");
+		Label label = new Label("	Floor: ");
+		label.setMaxHeight(50);
 		ComboBox<Floor> floor = new ComboBox<>(GUI.Instance.getMyHouse().getFloors());
 		floor.getSelectionModel().select(GUI.Instance.getCurrFloor());
 		Button floorButton = new Button();
@@ -80,7 +81,14 @@ public class ArduinoBigUI {
 			disable.setVisible(true);
 			activate.setVisible(false);
 		});
-		top.getChildren().addAll(back,label,floor,floorButton,disable);
+		
+		Button saveChanges = new Button();
+		saveChanges.setText("Save Changes!");
+		saveChanges.setOnAction(x->{
+			Network.Instance.SendPacketToArduino(myArduino.GetNetworkDataCollection());
+		});
+		Label spacer = new Label("	    ");
+		top.getChildren().addAll(back,saveChanges,label,floor,floorButton,spacer,disable);
 		mainLayout.setTop(top);
 	}
 	

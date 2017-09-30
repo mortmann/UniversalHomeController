@@ -1,22 +1,19 @@
 package com.stupro.uhc;
 
-import java.sql.ResultSet;
-
-import com.stupro.uhc.database.DatabaseIntegration;
 
 import javafx.application.Application;
 import javafx.stage.Stage;
 
 public class Main extends Application {
 	public static void main(String args[]) throws Exception {
-		//Database call 
-				DatabaseIntegration test = new DatabaseIntegration();
-				ResultSet rs;
-				rs = test.displaySHO();
-				while (rs.next()) {
-					System.out.println(rs.getString("id") + " " +rs.getString("nameSHO") + " " + rs.getString("metadataSHO") + " "
-							+ rs.getString("company") + " " + rs.getString("type"));
-				}
+//		//Database call 
+//				DatabaseIntegration test = new DatabaseIntegration();
+//				ResultSet rs;
+//				rs = test.displaySHO();
+//				while (rs.next()) {
+//					System.out.println(rs.getString("id") + " " +rs.getString("nameSHO") + " " + rs.getString("metadataSHO") + " "
+//							+ rs.getString("company") + " " + rs.getString("type"));
+//				}
 				
 		Application.launch(args);
 	}

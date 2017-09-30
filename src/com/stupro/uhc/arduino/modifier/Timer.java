@@ -3,6 +3,7 @@ package com.stupro.uhc.arduino.modifier;
 import com.stupro.uhc.network.Network;
 import com.stupro.uhc.util.NumberTextField;
 
+import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 
@@ -36,14 +37,18 @@ public class Timer extends Modifier {
 	@Override
 	protected Pane GetInnerPane() {
 		GridPane gridPane = new GridPane();
+		gridPane.add(new Label("Start (ON)"), 0, 1);
+		gridPane.add(new Label("End (OFF)"), 0, 2);
+		gridPane.add(new Label("Hours"), 1, 0);
+		gridPane.add(new Label("Minutes"), 2, 0);
 		startHRText = new NumberTextField(startHR+"",2,24);
-		gridPane.add(startHRText, 0, 1);
+		gridPane.add(startHRText, 1, 1);
 		startMINText = new NumberTextField(startMIN+"",2,59);
-		gridPane.add(startMINText, 1, 1);
+		gridPane.add(startMINText, 2, 1);
 		endHRText = new NumberTextField(endHR+"",2,24);
-		gridPane.add(endHRText, 0, 2);
+		gridPane.add(endHRText, 1, 2);
 		endMINText = new NumberTextField(endMIN+"",2,59);
-		gridPane.add(endMINText, 1, 2);
+		gridPane.add(endMINText, 2, 2);
 		startHRText.textProperty().addListener((observable, oldValue, newValue) -> {
 			setActive(true);
 			startHR = startHRText.GetIntValue();

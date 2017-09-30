@@ -2,27 +2,23 @@
    <floors class="com.sun.javafx.collections.ObservableListWrapper">
       <floor>
          <name>Test</name>
-         <arduinos>
-            <arduino>
-               <macAddress>AA:AA:AA:AA:AA</macAddress>
-               <name>TEST</name>
-               <x>0.0</x>
-               <y>0.0</y>
-               <isNew>true</isNew>
-               <isActive>true</isActive>
-               <metaData>000E011111</metaData>
-            </arduino>
-            <arduino>
-               <macAddress>DE:AD:BE:EF:FE:ED</macAddress>
-               <name>LED Kette</name>
-               <x>79.0</x>
-               <y>106.0</y>
-               <isNew>true</isNew>
-               <isActive>true</isActive>
-               <metaData>0001100000001</metaData>
-            </arduino>
-         </arduinos>
+         <arduinos/>
          <pictureLocation>/images/testapartment.png</pictureLocation>
+      </floor>
+      <floor>
+         <name>Flur 1</name>
+         <arduinos/>
+         <pictureLocation>file:///C:\Users\Mortmann MK IV\Downloads\testapartment_2.png</pictureLocation>
+      </floor>
+      <floor>
+         <name>werd</name>
+         <arduinos/>
+         <pictureLocation>file:///C:\Users\Mortmann MK IV\Downloads\testapartment_2.png</pictureLocation>
+      </floor>
+      <floor>
+         <name>awfsdjnb</name>
+         <arduinos/>
+         <pictureLocation>file:///C:\Users\Mortmann MK IV\Downloads\testapartment_2.png</pictureLocation>
       </floor>
    </floors>
 </house>

@@ -56,6 +56,14 @@ public class LED extends Child {
 		}
 		
 		String lightmode = metaData.substring(4, 6);
+		switch(lightmode){
+		case "00": 
+			ArrayList<Modifier> mods = new ArrayList<>();
+			mods = new ArrayList<>();
+			mods.add(new Repeater());
+			idToMyModifier.put(5, mods);
+			break;
+		}
 		String timer = metaData.substring(6, 7);
 		switch(timer){
 		case "1": 
@@ -72,10 +80,6 @@ public class LED extends Child {
 			green = (int) (cp.getValue().getGreen() * 255);
 			blue = (int) (cp.getValue().getBlue() * 255);
 		});
-		ArrayList<Modifier> mods = new ArrayList<>();
-		mods.add(new Repeater());
-		idToMyModifier.put(5, mods);
-		
 		dimmSlider = new Slider(0,maxBrightness,maxBrightness);
 		
 	}
@@ -107,6 +111,7 @@ public class LED extends Child {
 		gridPane.add(vbox, 1, 2);
 
 		GridPane.setHalignment(cp, HPos.CENTER);
+		
 		TitledPane titled = new TitledPane();
 		FlowPane flow = new FlowPane();
 		for (int key : idToMyModifier.keySet()) {
@@ -119,6 +124,7 @@ public class LED extends Child {
 
 		titled.setExpanded(false);
 		gridPane.add(titled, 3, 0);
+		
 		gridPane.setPadding(new Insets(10, 10, 10, 10)); 
 		return gridPane;
 	}

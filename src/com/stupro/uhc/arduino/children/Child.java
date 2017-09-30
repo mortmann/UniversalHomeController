@@ -61,6 +61,7 @@ public abstract class Child {
 		t.setGraphic(title);
 		innerPane = GetInnerPane();
 		t.setContent(innerPane);
+		t.setMinWidth(835);
 		t.setMaxWidth(Double.MAX_VALUE);
 //		t.setPrefWidth(400);
 		return t;

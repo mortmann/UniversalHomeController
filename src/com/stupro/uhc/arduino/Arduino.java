@@ -8,62 +8,62 @@ import org.simpleframework.xml.Element;
 
 import com.stupro.uhc.arduino.children.Child;
 import com.stupro.uhc.arduino.children.LED;
-import com.stupro.uhc.arduino.children.WashingMaschine;
 
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ObservableValue;
 
 public class Arduino {
 	@Element
-	protected String macAddress;
+	protected String macAddress; 
 	@Element
 	protected String name;
-	@Element
+	@Element 
 	protected double x = 0;
-	@Element
+	@Element 
 	protected double y = 0;
+	@Element 
+	protected boolean isNew;
 	@Element
-	protected boolean isNew = true;
-	@Element
-	protected boolean isActive = true;
+	protected boolean isActive; 
 	@Element
 	protected String metaData;
-
-	private boolean timedOut = false;
+	
+	private boolean timedOut = false; 
 	private ObservableValue<Boolean> timeout;
 	private ObservableValue<Boolean> active;
 	private ArrayList<Child> myChildren;
 	private InetAddress IPAddress;
-
+	
+	
 	public Arduino(String id, String name, InetAddress IPAddress, String metaData) {
 		this.macAddress = id;
 		this.name = name;
 		this.metaData = metaData;
-		this.IPAddress = IPAddress;
+		this.IPAddress=IPAddress;
+		isNew = true;
+		isActive = true;
 		initialize();
 	}
-
-	// For loading
-	public Arduino() {
-		initialize();
+	
+	//For loading
+	public Arduino(){
+		
 	}
 
-	private void initialize() {
+	private void initialize(){
 		myChildren = new ArrayList<>();
 		active = new SimpleBooleanProperty(isActive).asObject();
 		timeout = new SimpleBooleanProperty(timedOut).asObject();
 		String type = metaData.substring(0, 4);
-		System.out.println(metaData);
-		switch (type) {
+		switch(type){
 		case "0001":
-			int childCount = Integer.parseInt(metaData.substring(4, 6), 16);
-			for (int i = 0; i <= childCount; i++) {
+			int childCount = Integer.parseInt(metaData.substring(4, 6),16);
+			System.out.println(childCount +" = " +metaData.substring(4, 6));
+			for (int i = 0; i < childCount; i++) {
 				myChildren.add(new LED(metaData.substring(6, metaData.length())));
 			}
 			break;
-
-		case "000E":
-			myChildren.add(new WashingMaschine(metaData));
+		case "1001":
 			break;
 		case "0201":
 			break;
@@ -71,42 +71,41 @@ public class Arduino {
 			break;
 		}
 	}
-
-	public void HandleInfo(String info) {
-		// these are the cilds differentiated (most of the time it will have
-		// only 1)
-		// v v
-		// <;;; (ID[;;][;;][;;]) ([;]) ([][]) <NEXT
+	
+	
+	public void HandleInfo(String info){
+//		these are the cilds differentiated (most of the time it will have only 1)
+//		v										v
+//		<;;; (ID[;;][;;][;;]) ([;]) ([][]) <NEXT
 		setTimedOut(false);
 		String[] childs = info.split("<");
-		for (int i = 1; i < childs.length; i++) {
-			myChildren.get(i - 1).HandleInfo(childs[i]);
+		for(int i=1;i<childs.length;i++){
+			myChildren.get(i-1).HandleInfo(childs[i]);
 		}
 	}
-
-	public String GetNetworkData() {
+	public String GetNetworkData(){
 		String data = "";
-		for (Child c : myChildren) {
-			data += c.GetDataString();
-			data += "<";
+		for(Child c : myChildren){
+			data+=c.GetDataString();
+			data+="<";
 		}
 		return data;
 	}
-
-	public Collection<String> GetNetworkDataCollection() {
+	public Collection<String> GetNetworkDataCollection(){
 		ArrayList<String> datas = new ArrayList<>();
-		for (int i = 0; i < myChildren.size(); i++) {
+		for (int i=0; i<myChildren.size();i++) {
 			datas.addAll(myChildren.get(i).GetDatapackages(i));
 		}
-		datas.removeIf(x -> x == null || x.trim().isEmpty());
+		datas.removeIf(x->x==null||x.trim().isEmpty());
 		return datas;
 	}
-
-	public void UpdatePosition(double x, double y) {
+	
+	
+	public void UpdatePosition(double x, double y){
 		this.x = x;
 		this.y = y;
 	}
-
+	
 	public InetAddress getIPAddress() {
 		return IPAddress;
 	}
@@ -125,9 +124,8 @@ public class Arduino {
 
 	@Override
 	public String toString() {
-		if (name == null || name.isEmpty())
-			return IPAddress.toString(); // change this to some kind of default
-											// name for its id
+		if(name==null || name.isEmpty())
+			return IPAddress.toString(); // change this to some kind of default name for its id
 		return name;
 	}
 
@@ -146,9 +144,9 @@ public class Arduino {
 	public void setNew(boolean isNew) {
 		this.isNew = isNew;
 	}
-
-	public String getMacAddress() {
-		return macAddress;
+	
+	public String getMacAddress(){
+	    return macAddress;
 	}
 
 	public boolean isActive() {
@@ -174,13 +172,16 @@ public class Arduino {
 	public boolean isTimedOut() {
 		return timedOut;
 	}
-
-	public void ResetPosition() {
-		x = 0;
-		y = 0;
+	public void ResetPosition(){
+		x=0;
+		y=0;
 	}
 
 	public ArrayList<Child> getChildren() {
 		return myChildren;
+	}
+
+	public void load() {
+		initialize();		
 	}
 }

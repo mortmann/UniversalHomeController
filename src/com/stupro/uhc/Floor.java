@@ -13,6 +13,7 @@ import com.stupro.uhc.arduino.ui.ArduinoSmallUI;
 import javafx.event.EventHandler;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
+import javafx.scene.Node;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
@@ -28,7 +29,7 @@ public class Floor {
 	@ElementList
 	protected ArrayList<Arduino> arduinos;
 	@Element
-	protected String pictureLocation = "/images/testapartment.png";
+	protected String pictureLocation;
 	
 	
 	HashMap<Arduino,Pane> arduinoToPane;
@@ -39,20 +40,27 @@ public class Floor {
 	protected double orgSceneY;
 	protected double orgTranslateX;
 	protected double orgTranslateY;
-	static ImageView background;
-	private static Pane arduinoRoot;
-	static double maxX;
-	static double maxY;
+	ImageView background;
+	private Pane arduinoRoot;
+	double maxX;
+	double maxY;
 	protected double orgScreenX;
 	protected double orgScreenY;
 	protected boolean dragging;
 
-	public Floor(String pictureLocation){
+	public Floor(String name,String pictureLocation){
+		this.name = name;
+		if(pictureLocation.startsWith("/")==false){
+			pictureLocation="file:///"+pictureLocation;
+		}
 		this.pictureLocation = pictureLocation;
+		arduinos = new ArrayList<>();
+
 		initialize();
+		
 	}
 	public Floor(){
-		initialize();
+//		initialize();
 	}
 	
 	public void AddArduino(Arduino ar){
@@ -62,30 +70,28 @@ public class Floor {
 		if(arduinos.contains(ar)==false){// this is for loading
 			arduinos.add(ar);
 		}
-			
 		arduinoRoot.getChildren().add(p);
-		
 	}
 	
 	private void initialize(){
+		
+//		center = new ScrollPane();
 		center = new StackPane();
 		arduinoToPane = new HashMap<>();
-		arduinos = new ArrayList<>();
 		Image image = new Image(pictureLocation);
 		background = new ImageView(image);
+		background.setPreserveRatio(true);
 		maxX = image.getWidth();
 		maxY = image.getHeight();
-		background.setStyle("-fx-background-color: linear-gradient(to bottom, rgb(20,20,20), rgb(30,60,80));");
+//		background.setStyle("-fx-background-color: linear-gradient(to bottom, rgb(20,20,20), rgb(30,60,80));");
 		arduinoRoot = new Pane();
-		this.pictureLocation = pictureLocation;
-		arduinoRoot.setMaxHeight(maxY);
-		arduinoRoot.setMaxWidth(maxX);
+		center.setPrefSize(maxX, maxY);
+
+		background.setFitWidth(800);
+		background.setFitHeight(500);
 
 		center.getChildren().addAll(background , arduinoRoot);
 		
-//		for (int i = 0; i < 1; i++) {
-//			arduinoRoot.getChildren().add(new ArduinoSmallUI(new Arduino(0, "test", null)));
-//		}
 		center.setOnZoom(onZoomEventHandler);
 		center.setOnScroll(onScrollEventHandler);
 		center.toBack();
@@ -100,7 +106,7 @@ public class Floor {
 		arduinoToPane.remove(adr);
 	}
 	
-	public Pane getCenter() {
+	public Node getCenter() {
 		return center;
 	}
 	
@@ -109,7 +115,7 @@ public class Floor {
 	}
 	
 	
-	public static boolean outSideBounds( Point2D point) {
+	public boolean outSideBounds( Point2D point) {
 		Bounds bound = background.getBoundsInLocal();
 		if(bound.contains(point)){
 			return false; 
@@ -210,8 +216,9 @@ public class Floor {
 	}
 
 	public void load() {
+		initialize();
 		for (Arduino arduino : arduinos) {
-			System.out.println(arduino.getName());
+			arduino.load();
 			AddArduino(arduino);
 		}
 	}

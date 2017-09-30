@@ -18,7 +18,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TitledPane;
 import javafx.scene.layout.GridPane;
 
-public class WashingMaschine extends Child {
+public class WashingMachine extends Child {
 	List<String> materials;
 	boolean time;
 	List<String> temperature;
@@ -33,7 +33,7 @@ public class WashingMaschine extends Child {
 	int child[] = new int[4];
 	Timer t = new Timer();
 	
-	public WashingMaschine(String metaData) {
+	public WashingMachine(String metaData) {
 		ArrayList<Modifier> mods = new ArrayList<>();
 		name = "WaschingMaschine";
 		String materialMeta = metaData.substring(0, 2);
